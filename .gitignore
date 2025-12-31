@@ -30,3 +30,10 @@ build/
 system-test/
 *-preview.html
 *.zip
+
+# SECURITY - Private keys (NEVER COMMIT)
+bee_key
+**/bee_key
+*.pem
+*.key
+!*.pub
