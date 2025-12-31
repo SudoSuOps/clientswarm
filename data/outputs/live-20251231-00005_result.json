@@ -1,0 +1,40 @@
+{
+  "job_id": "live-20251231-00005",
+  "inference_ms": 121057,
+  "result": {
+    "impression": [
+      "Severe central stenosis at L4-L5",
+      "Surgical consultation recommended"
+    ],
+    "stenosis_grades": {
+      "L1-L2": "Normal",
+      "L2-L3": "Normal",
+      "L3-L4": "Normal",
+      "L4-L5": "Severe",
+      "L5-S1": "Moderate"
+    },
+    "confidence": {
+      "score_0_100": 63,
+      "method": "self_consistency_k7",
+      "agreement": {
+        "findings": "0%",
+        "grading": "83%",
+        "impression": "100%"
+      },
+      "abstained": false
+    },
+    "limits": [
+      "Findings interpretation showed variability across assessments.",
+      "Assessment limited without axial T2 correlation."
+    ],
+    "recommendation": [
+      "Consider neurosurgical consultation.",
+      "Follow-up MRI if symptoms persist or worsen."
+    ],
+    "safety": {
+      "abstain_threshold": 60,
+      "is_confident": true
+    },
+    "raw_generations": 7
+  }
+}
