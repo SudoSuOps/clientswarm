@@ -22,7 +22,7 @@ import hashlib
 CONFIG = {
     "queenbee_url": "http://localhost:8000",
     "bee1_url": "http://localhost:8001",
-    "worker_ens": "bee-02.swarmbee.eth",
+    "worker_ens": "bumble70b.swarmbee.eth",
     "heartbeat_interval": 30,
     "session_duration_hours": 2,
     "log_dir": Path("/home/ai/swarm-genesis/logs"),

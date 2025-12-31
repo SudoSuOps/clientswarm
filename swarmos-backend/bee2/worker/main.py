@@ -34,7 +34,7 @@ import httpx
 class WorkerConfig:
     """Worker configuration."""
     # Identity
-    ens: str = os.getenv("WORKER_ENS", "bee-01.swarmbee.eth")
+    ens: str = os.getenv("WORKER_ENS", "bumble70b.swarmbee.eth")
     private_key: str = os.getenv("WORKER_PRIVATE_KEY", "")
 
     # Hardware
