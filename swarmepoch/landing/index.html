@@ -1,0 +1,852 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmEpoch | The Immutable Archive</title>
+  <meta name="description" content="SwarmEpoch - Sealed epochs of sovereign compute. Merkle roots. Cryptographic truth. Forever.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>📦</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-950: #030305;
+      --bg-900: #0a0a0f;
+      --bg-800: #10101a;
+      --bg-700: #1a1a28;
+      --bg-600: #262638;
+      --bg-500: #333348;
+      --purple: #8b5cf6;
+      --purple-bright: #a78bfa;
+      --purple-dim: #7c3aed;
+      --cyan: #06b6d4;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-950);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Stacked blocks background */
+    .blocks-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(139, 92, 246, 0.08) 0%, transparent 50%),
+        linear-gradient(rgba(139, 92, 246, 0.015) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(139, 92, 246, 0.015) 1px, transparent 1px);
+      background-size: cover, 60px 60px, 60px 60px;
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(139, 92, 246, 0.1);
+    }
+    
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--purple) 0%, var(--purple-dim) 100%);
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 22px;
+      box-shadow: 0 0 20px rgba(139, 92, 246, 0.3);
+    }
+    
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-text span { color: var(--purple); }
+    
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--bg-700);
+    }
+    
+    /* Hero */
+    .hero {
+      padding: 100px 0 60px;
+      text-align: center;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(139, 92, 246, 0.1);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--purple);
+      margin-bottom: 28px;
+    }
+    
+    .hero h1 {
+      font-size: clamp(48px, 7vw, 72px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span { color: var(--purple); }
+    
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    
+    /* Stats */
+    .epoch-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(139, 92, 246, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 60px 0;
+    }
+    
+    @media (max-width: 800px) {
+      .epoch-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .epoch-stat {
+      background: var(--bg-800);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    
+    .epoch-stat-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--purple);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+    
+    .epoch-stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Timeline */
+    .timeline-section {
+      padding: 60px 0;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .section-header p {
+      color: var(--text-dim);
+      font-size: 16px;
+    }
+    
+    .timeline {
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 2px;
+      height: 100%;
+      background: linear-gradient(to bottom, var(--purple), var(--purple-dim), transparent);
+    }
+    
+    @media (max-width: 700px) {
+      .timeline::before { left: 20px; }
+    }
+    
+    .epoch-block {
+      position: relative;
+      margin-bottom: 40px;
+      display: flex;
+      align-items: flex-start;
+    }
+    
+    .epoch-block:nth-child(odd) {
+      flex-direction: row;
+      padding-right: calc(50% + 40px);
+    }
+    
+    .epoch-block:nth-child(even) {
+      flex-direction: row-reverse;
+      padding-left: calc(50% + 40px);
+    }
+    
+    @media (max-width: 700px) {
+      .epoch-block:nth-child(odd),
+      .epoch-block:nth-child(even) {
+        flex-direction: row;
+        padding-left: 50px;
+        padding-right: 0;
+      }
+    }
+    
+    .epoch-dot {
+      position: absolute;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 20px;
+      height: 20px;
+      background: var(--purple);
+      border: 4px solid var(--bg-950);
+      border-radius: 50%;
+      z-index: 1;
+    }
+    
+    .epoch-block.active .epoch-dot {
+      background: var(--amber);
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.5);
+      animation: pulse-dot 2s infinite;
+    }
+    
+    @keyframes pulse-dot {
+      0%, 100% { transform: translateX(-50%) scale(1); }
+      50% { transform: translateX(-50%) scale(1.2); }
+    }
+    
+    @media (max-width: 700px) {
+      .epoch-dot { left: 20px; }
+    }
+    
+    .epoch-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 24px;
+      width: 100%;
+      transition: all 0.3s;
+    }
+    
+    .epoch-card:hover {
+      border-color: var(--purple);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .epoch-block.active .epoch-card {
+      border-color: var(--amber);
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.05) 0%, transparent 50%);
+    }
+    
+    .epoch-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+    }
+    
+    .epoch-id {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--purple);
+    }
+    
+    .epoch-block.active .epoch-id {
+      color: var(--amber);
+    }
+    
+    .epoch-status {
+      padding: 4px 12px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .epoch-status.finalized {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+    }
+    
+    .epoch-status.active {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+    }
+    
+    .epoch-meta {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 16px;
+      margin-bottom: 16px;
+    }
+    
+    .epoch-meta-item {
+      text-align: center;
+    }
+    
+    .epoch-meta-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .epoch-meta-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .epoch-merkle {
+      background: var(--bg-900);
+      border-radius: 8px;
+      padding: 12px;
+    }
+    
+    .epoch-merkle-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 6px;
+    }
+    
+    .epoch-merkle-hash {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--cyan);
+      word-break: break-all;
+    }
+    
+    .epoch-time {
+      margin-top: 12px;
+      font-size: 12px;
+      color: var(--text-muted);
+      text-align: right;
+    }
+    
+    /* Structure section */
+    .structure-section {
+      padding: 80px 0;
+    }
+    
+    .structure-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .structure-title {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--purple);
+      margin-bottom: 24px;
+    }
+    
+    .file-tree {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      line-height: 2;
+    }
+    
+    .file-tree .folder { color: var(--purple); }
+    .file-tree .file { color: var(--text-dim); }
+    .file-tree .hash { color: var(--cyan); font-size: 12px; }
+    .file-tree .size { color: var(--text-muted); font-size: 12px; }
+    
+    /* Verification */
+    .verify-section {
+      padding: 60px 0;
+    }
+    
+    .verify-card {
+      background: linear-gradient(135deg, rgba(139, 92, 246, 0.1) 0%, rgba(139, 92, 246, 0.02) 100%);
+      border: 1px solid rgba(139, 92, 246, 0.2);
+      border-radius: 24px;
+      padding: 48px;
+      text-align: center;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .verify-card h3 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .verify-card p {
+      color: var(--text-dim);
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+    
+    .verify-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      text-align: left;
+    }
+    
+    @media (max-width: 600px) {
+      .verify-steps { grid-template-columns: 1fr; }
+    }
+    
+    .verify-step {
+      background: var(--bg-800);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .verify-step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--purple);
+      color: white;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    
+    .verify-step-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .verify-step-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    /* IPFS section */
+    .ipfs-section {
+      padding: 60px 0;
+    }
+    
+    .ipfs-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 32px;
+      max-width: 600px;
+      margin: 0 auto;
+      text-align: center;
+    }
+    
+    .ipfs-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .ipfs-card h3 {
+      font-size: 20px;
+      margin-bottom: 12px;
+    }
+    
+    .ipfs-card p {
+      color: var(--text-dim);
+      font-size: 14px;
+      margin-bottom: 24px;
+    }
+    
+    .ipfs-hash {
+      background: var(--bg-900);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--cyan);
+      word-break: break-all;
+    }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--bg-700);
+      padding: 40px 0;
+      margin-top: 60px;
+    }
+    
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover { color: var(--purple); }
+    
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; gap: 16px; }
+      .hero { padding: 60px 0 40px; }
+      .epoch-stat-value { font-size: 32px; }
+      .epoch-meta { grid-template-columns: 1fr; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="blocks-bg"></div>
+  
+  <header>
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">📦</div>
+          <div class="logo-text">Swarm<span>Epoch</span></div>
+        </div>
+        <nav class="nav-links">
+          <a href="#timeline">Timeline</a>
+          <a href="#structure">Structure</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb →</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span class="mono">swarmepoch.eth</span>
+        </div>
+        <h1>The Immutable <span>Archive</span></h1>
+        <p class="hero-sub">
+          Sealed epochs of sovereign compute. Every job Merkle-proven. Every settlement cryptographically final. Forever on IPFS.
+        </p>
+      </div>
+    </section>
+    
+    <!-- Stats -->
+    <div class="container">
+      <div class="epoch-stats">
+        <div class="epoch-stat">
+          <div class="epoch-stat-value">3</div>
+          <div class="epoch-stat-label">Epochs Sealed</div>
+        </div>
+        <div class="epoch-stat">
+          <div class="epoch-stat-value">420</div>
+          <div class="epoch-stat-label">Jobs Archived</div>
+        </div>
+        <div class="epoch-stat">
+          <div class="epoch-stat-value">$42.00</div>
+          <div class="epoch-stat-label">Total Settled</div>
+        </div>
+        <div class="epoch-stat">
+          <div class="epoch-stat-value">100%</div>
+          <div class="epoch-stat-label">Verifiable</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Timeline -->
+    <section class="timeline-section" id="timeline">
+      <div class="container">
+        <div class="section-header">
+          <h2>Epoch Timeline</h2>
+          <p>Chronological archive of sealed compute epochs</p>
+        </div>
+        
+        <div class="timeline">
+          <!-- Active Epoch -->
+          <div class="epoch-block active">
+            <div class="epoch-dot"></div>
+            <div class="epoch-card">
+              <div class="epoch-header">
+                <span class="epoch-id">epoch-003</span>
+                <span class="epoch-status active">Active</span>
+              </div>
+              <div class="epoch-meta">
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">67</div>
+                  <div class="epoch-meta-label">Jobs</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">$6.70</div>
+                  <div class="epoch-meta-label">Revenue</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">5</div>
+                  <div class="epoch-meta-label">Agents</div>
+                </div>
+              </div>
+              <div class="epoch-merkle">
+                <div class="epoch-merkle-label">Merkle Root</div>
+                <div class="epoch-merkle-hash">Pending seal...</div>
+              </div>
+              <div class="epoch-time">Started Jan 18, 2025 00:00 UTC</div>
+            </div>
+          </div>
+          
+          <!-- Epoch 002 -->
+          <div class="epoch-block">
+            <div class="epoch-dot"></div>
+            <div class="epoch-card">
+              <div class="epoch-header">
+                <span class="epoch-id">epoch-002</span>
+                <span class="epoch-status finalized">Finalized</span>
+              </div>
+              <div class="epoch-meta">
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">248</div>
+                  <div class="epoch-meta-label">Jobs</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">$24.80</div>
+                  <div class="epoch-meta-label">Revenue</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">5</div>
+                  <div class="epoch-meta-label">Agents</div>
+                </div>
+              </div>
+              <div class="epoch-merkle">
+                <div class="epoch-merkle-label">Merkle Root</div>
+                <div class="epoch-merkle-hash">a3f891c2e7d4b5f6a8c9d0e1f2a3b4c5d6e7f8a9b0c1d2e3f4a5b6c7d8e9f0a1</div>
+              </div>
+              <div class="epoch-time">Sealed Jan 17, 2025 00:00 UTC</div>
+            </div>
+          </div>
+          
+          <!-- Epoch 001 -->
+          <div class="epoch-block">
+            <div class="epoch-dot"></div>
+            <div class="epoch-card">
+              <div class="epoch-header">
+                <span class="epoch-id">epoch-001</span>
+                <span class="epoch-status finalized">Finalized</span>
+              </div>
+              <div class="epoch-meta">
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">105</div>
+                  <div class="epoch-meta-label">Jobs</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">$10.50</div>
+                  <div class="epoch-meta-label">Revenue</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">3</div>
+                  <div class="epoch-meta-label">Agents</div>
+                </div>
+              </div>
+              <div class="epoch-merkle">
+                <div class="epoch-merkle-label">Merkle Root</div>
+                <div class="epoch-merkle-hash">7ec20e03b05b7898c3cdc33f0d066ddf860091338eaace5ad51df1f1f8c472b5</div>
+              </div>
+              <div class="epoch-time">Sealed Jan 16, 2025 00:00 UTC</div>
+            </div>
+          </div>
+          
+          <!-- Genesis -->
+          <div class="epoch-block">
+            <div class="epoch-dot"></div>
+            <div class="epoch-card">
+              <div class="epoch-header">
+                <span class="epoch-id">epoch-000</span>
+                <span class="epoch-status finalized">Genesis</span>
+              </div>
+              <div class="epoch-meta">
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">0</div>
+                  <div class="epoch-meta-label">Jobs</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">$0.00</div>
+                  <div class="epoch-meta-label">Revenue</div>
+                </div>
+                <div class="epoch-meta-item">
+                  <div class="epoch-meta-value">0</div>
+                  <div class="epoch-meta-label">Agents</div>
+                </div>
+              </div>
+              <div class="epoch-merkle">
+                <div class="epoch-merkle-label">Genesis Hash</div>
+                <div class="epoch-merkle-hash">0000000000000000000000000000000000000000000000000000000000000000</div>
+              </div>
+              <div class="epoch-time">Genesis Jan 1, 2025 00:00 UTC</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Structure -->
+    <section class="structure-section" id="structure">
+      <div class="container">
+        <div class="section-header">
+          <h2>Epoch Structure</h2>
+          <p>Canonical format for sealed epoch bundles</p>
+        </div>
+        
+        <div class="structure-card">
+          <div class="structure-title">audit/epoch-002/</div>
+          <div class="file-tree">
+            <div><span class="folder">📁 audit/epoch-002/</span></div>
+            <div>&nbsp;&nbsp;├── <span class="file">SUMMARY.json</span> <span class="size">(2.1 KB)</span></div>
+            <div>&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="hash">↳ Treasury, agents, clients, totals</span></div>
+            <div>&nbsp;&nbsp;├── <span class="file">jobs.json</span> <span class="size">(48 KB)</span></div>
+            <div>&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="hash">↳ All 248 jobs with PoE hashes</span></div>
+            <div>&nbsp;&nbsp;├── <span class="file">agents.json</span> <span class="size">(1.2 KB)</span></div>
+            <div>&nbsp;&nbsp;│&nbsp;&nbsp;&nbsp;<span class="hash">↳ Worker stats and payouts</span></div>
+            <div>&nbsp;&nbsp;└── <span class="file">SIGNATURE.txt</span> <span class="size">(0.4 KB)</span></div>
+            <div>&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<span class="hash">↳ EIP-191 signed by swarmos.eth</span></div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Verification -->
+    <section class="verify-section">
+      <div class="container">
+        <div class="verify-card">
+          <h3>Verify Any Job</h3>
+          <p>
+            Every job includes a Merkle proof. Verify inclusion against the epoch root.
+            Cryptographic truth. No trust required.
+          </p>
+          
+          <div class="verify-steps">
+            <div class="verify-step">
+              <div class="verify-step-num">1</div>
+              <div class="verify-step-title">Get Receipt</div>
+              <div class="verify-step-desc">Fetch job receipt from SwarmOrb</div>
+            </div>
+            <div class="verify-step">
+              <div class="verify-step-num">2</div>
+              <div class="verify-step-title">Check Proof</div>
+              <div class="verify-step-desc">Verify Merkle proof against root</div>
+            </div>
+            <div class="verify-step">
+              <div class="verify-step-num">3</div>
+              <div class="verify-step-title">Verify Sig</div>
+              <div class="verify-step-desc">Confirm swarmos.eth signature</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- IPFS -->
+    <section class="ipfs-section">
+      <div class="container">
+        <div class="ipfs-card">
+          <div class="ipfs-icon">🌐</div>
+          <h3>Pinned Forever</h3>
+          <p>All epoch data is content-addressed and pinned to IPFS. Immutable. Permanent. Sovereign.</p>
+          <div class="ipfs-hash">
+            ipfs://QmYwAPJzv5CZsnAzt8auVZRn...
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-links">
+          <a href="https://swarmos.eth.limo" target="_blank">SwarmOS</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb</a>
+          <a href="https://swarmledger.eth.limo" target="_blank">SwarmLedger</a>
+          <a href="https://swarmbee.eth.limo" target="_blank">SwarmBee</a>
+        </div>
+        <div class="footer-copy">
+          <span class="mono">swarmepoch.eth</span> · SudoHash LLC · The Archive
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

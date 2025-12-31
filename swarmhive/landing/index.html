@@ -1,0 +1,1468 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmHive | Sovereign AI Models</title>
+  <meta name="description" content="SwarmHive - Production AI models from SudoHash. Medical imaging, LLMs, custom builds. Local compute. Sovereign inference. Two years of building.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🧬</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-950: #020608;
+      --bg-900: #050a0e;
+      --bg-800: #0a1218;
+      --bg-700: #101c24;
+      --bg-600: #182830;
+      --bg-500: #243640;
+      --teal: #14b8a6;
+      --teal-bright: #2dd4bf;
+      --teal-dim: #0d9488;
+      --blue: #3b82f6;
+      --purple: #8b5cf6;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --cyan: #06b6d4;
+      --text: #f0fdfa;
+      --text-dim: #94a3b8;
+      --text-muted: #64748b;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-950);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* DNA/Neural background */
+    .neural-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 30% 0%, rgba(20, 184, 166, 0.1) 0%, transparent 50%),
+        radial-gradient(ellipse at 70% 100%, rgba(59, 130, 246, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .neural-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg width='60' height='60' viewBox='0 0 60 60' xmlns='http://www.w3.org/2000/svg'%3E%3Cg fill='none' fill-rule='evenodd'%3E%3Cg fill='%2314b8a6' fill-opacity='0.03'%3E%3Cpath d='M36 34v-4h-2v4h-4v2h4v4h2v-4h4v-2h-4zm0-30V0h-2v4h-4v2h4v4h2V6h4V4h-4zM6 34v-4H4v4H0v2h4v4h2v-4h4v-2H6zM6 4V0H4v4H0v2h4v4h2V6h4V4H6z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1300px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(20, 184, 166, 0.15);
+    }
+    
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--teal) 0%, var(--blue) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 26px;
+      box-shadow: 0 0 30px rgba(20, 184, 166, 0.4);
+    }
+    
+    .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-text span { 
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .nav-links {
+      display: flex;
+      gap: 8px;
+      align-items: center;
+    }
+    
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--bg-700);
+    }
+    
+    .nav-links a.primary {
+      background: linear-gradient(135deg, var(--teal) 0%, var(--teal-dim) 100%);
+      color: var(--bg-950);
+      font-weight: 600;
+    }
+    
+    /* Hero */
+    .hero {
+      padding: 100px 0 80px;
+      text-align: center;
+    }
+    
+    .hero-badges {
+      display: flex;
+      justify-content: center;
+      gap: 12px;
+      flex-wrap: wrap;
+      margin-bottom: 32px;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(20, 184, 166, 0.1);
+      border: 1px solid rgba(20, 184, 166, 0.3);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--teal);
+    }
+    
+    .hero-badge.secondary {
+      background: rgba(59, 130, 246, 0.1);
+      border-color: rgba(59, 130, 246, 0.3);
+      color: var(--blue);
+    }
+    
+    .hero h1 {
+      font-size: clamp(48px, 7vw, 80px);
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1;
+      margin-bottom: 24px;
+    }
+    
+    .hero h1 .gradient {
+      background: linear-gradient(90deg, var(--teal), var(--cyan), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero-sub {
+      font-size: 20px;
+      color: var(--text-dim);
+      max-width: 700px;
+      margin: 0 auto 48px;
+      line-height: 1.6;
+    }
+    
+    .hero-stats {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+    }
+    
+    .hero-stat {
+      text-align: center;
+    }
+    
+    .hero-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .hero-stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      margin-top: 4px;
+    }
+    
+    /* Foundation section */
+    .foundation-section {
+      padding: 60px 0;
+    }
+    
+    .foundation-card {
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.08) 0%, rgba(59, 130, 246, 0.05) 100%);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 20px;
+      padding: 40px;
+      display: grid;
+      grid-template-columns: 1fr 2fr;
+      gap: 40px;
+      align-items: center;
+    }
+    
+    @media (max-width: 800px) {
+      .foundation-card { grid-template-columns: 1fr; text-align: center; }
+    }
+    
+    .foundation-logo {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 16px;
+    }
+    
+    .monai-logo {
+      width: 120px;
+      height: 120px;
+      background: linear-gradient(135deg, #00b4d8 0%, #0077b6 100%);
+      border-radius: 24px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 48px;
+      font-weight: 700;
+      color: white;
+      box-shadow: 0 20px 40px rgba(0, 180, 216, 0.3);
+    }
+    
+    .monai-text {
+      font-size: 28px;
+      font-weight: 700;
+      letter-spacing: -1px;
+    }
+    
+    .foundation-content h3 {
+      font-size: 28px;
+      margin-bottom: 16px;
+    }
+    
+    .foundation-content p {
+      color: var(--text-dim);
+      line-height: 1.7;
+      margin-bottom: 20px;
+    }
+    
+    .foundation-features {
+      display: flex;
+      gap: 24px;
+      flex-wrap: wrap;
+    }
+    
+    .foundation-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+    }
+    
+    .foundation-feature .icon {
+      color: var(--teal);
+    }
+    
+    /* Models Section */
+    .models-section {
+      padding: 80px 0;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .section-header h2 {
+      font-size: 40px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      letter-spacing: -1px;
+    }
+    
+    .section-header p {
+      color: var(--text-dim);
+      font-size: 18px;
+    }
+    
+    .models-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    
+    @media (max-width: 1000px) {
+      .models-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    @media (max-width: 600px) {
+      .models-grid { grid-template-columns: 1fr; }
+    }
+    
+    .model-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    .model-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-6px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.4);
+    }
+    
+    .model-card.featured {
+      border-color: var(--teal);
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.05) 0%, var(--bg-800) 50%);
+    }
+    
+    .model-header {
+      padding: 24px 24px 16px;
+      display: flex;
+      align-items: flex-start;
+      justify-content: space-between;
+    }
+    
+    .model-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .model-icon.medical { background: linear-gradient(135deg, var(--teal), var(--cyan)); }
+    .model-icon.llm { background: linear-gradient(135deg, var(--purple), var(--blue)); }
+    .model-icon.vision { background: linear-gradient(135deg, var(--amber), var(--red)); }
+    
+    .model-badge {
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 11px;
+      font-weight: 600;
+      text-transform: uppercase;
+    }
+    
+    .model-badge.production {
+      background: rgba(16, 185, 129, 0.15);
+      color: var(--green);
+    }
+    
+    .model-badge.beta {
+      background: rgba(245, 158, 11, 0.15);
+      color: var(--amber);
+    }
+    
+    .model-badge.research {
+      background: rgba(139, 92, 246, 0.15);
+      color: var(--purple);
+    }
+    
+    .model-body {
+      padding: 0 24px 20px;
+    }
+    
+    .model-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .model-variant {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--teal);
+      margin-bottom: 12px;
+    }
+    
+    .model-desc {
+      font-size: 14px;
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 16px;
+    }
+    
+    .model-specs {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 12px;
+    }
+    
+    .model-spec {
+      background: var(--bg-900);
+      border-radius: 8px;
+      padding: 10px 12px;
+    }
+    
+    .model-spec-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .model-spec-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      margin-top: 2px;
+    }
+    
+    .model-spec-value.highlight { color: var(--teal); }
+    
+    .model-footer {
+      padding: 16px 24px;
+      border-top: 1px solid var(--bg-700);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .model-accuracy {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+    
+    .accuracy-bar {
+      width: 100px;
+      height: 6px;
+      background: var(--bg-600);
+      border-radius: 3px;
+      overflow: hidden;
+    }
+    
+    .accuracy-fill {
+      height: 100%;
+      background: linear-gradient(90deg, var(--teal), var(--green));
+      border-radius: 3px;
+    }
+    
+    .accuracy-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--green);
+    }
+    
+    .model-link {
+      font-size: 13px;
+      color: var(--teal);
+      text-decoration: none;
+      display: flex;
+      align-items: center;
+      gap: 4px;
+    }
+    
+    .model-link:hover { text-decoration: underline; }
+    
+    /* LLM Section */
+    .llm-section {
+      padding: 80px 0;
+    }
+    
+    .llm-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    
+    @media (max-width: 800px) {
+      .llm-grid { grid-template-columns: 1fr; }
+    }
+    
+    .llm-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s;
+    }
+    
+    .llm-card:hover {
+      border-color: var(--purple);
+    }
+    
+    .llm-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .llm-icon {
+      width: 64px;
+      height: 64px;
+      background: linear-gradient(135deg, var(--purple), var(--blue));
+      border-radius: 16px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 32px;
+    }
+    
+    .llm-title {
+      flex: 1;
+    }
+    
+    .llm-name {
+      font-size: 24px;
+      font-weight: 600;
+    }
+    
+    .llm-params {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--purple);
+    }
+    
+    .llm-desc {
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 20px;
+    }
+    
+    .llm-specs {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+    }
+    
+    .llm-spec {
+      background: var(--bg-900);
+      padding: 8px 16px;
+      border-radius: 8px;
+      font-size: 13px;
+    }
+    
+    .llm-spec strong {
+      color: var(--text);
+    }
+    
+    /* Infrastructure */
+    .infra-section {
+      padding: 80px 0;
+    }
+    
+    .infra-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 20px;
+    }
+    
+    @media (max-width: 900px) {
+      .infra-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .infra-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 28px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .infra-card:hover {
+      border-color: var(--teal);
+    }
+    
+    .infra-icon {
+      font-size: 40px;
+      margin-bottom: 16px;
+    }
+    
+    .infra-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--teal);
+      margin-bottom: 4px;
+    }
+    
+    .infra-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    /* Links section */
+    .links-section {
+      padding: 60px 0;
+    }
+    
+    .links-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    
+    @media (max-width: 800px) {
+      .links-grid { grid-template-columns: 1fr; }
+    }
+    
+    .link-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.3s;
+      text-decoration: none;
+      color: var(--text);
+    }
+    
+    .link-card:hover {
+      border-color: var(--teal);
+      transform: translateY(-4px);
+    }
+    
+    .link-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .link-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .link-url {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--teal);
+    }
+    
+    /* Trust section */
+    .trust-section {
+      padding: 80px 0;
+    }
+    
+    .trust-card {
+      background: linear-gradient(135deg, rgba(20, 184, 166, 0.1) 0%, rgba(59, 130, 246, 0.05) 100%);
+      border: 1px solid rgba(20, 184, 166, 0.2);
+      border-radius: 24px;
+      padding: 60px;
+      text-align: center;
+    }
+    
+    .trust-card h2 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 24px;
+    }
+    
+    .trust-card h2 .gradient {
+      background: linear-gradient(90deg, var(--teal), var(--blue));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .trust-pillars {
+      display: flex;
+      justify-content: center;
+      gap: 48px;
+      flex-wrap: wrap;
+      margin-bottom: 40px;
+    }
+    
+    .trust-pillar {
+      text-align: center;
+    }
+    
+    .trust-pillar-icon {
+      font-size: 48px;
+      margin-bottom: 12px;
+    }
+    
+    .trust-pillar-title {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .trust-pillar-desc {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .trust-tagline {
+      font-size: 18px;
+      color: var(--text-dim);
+      max-width: 600px;
+      margin: 0 auto;
+      line-height: 1.7;
+    }
+    
+    .trust-tagline strong {
+      color: var(--teal);
+    }
+    
+    /* Timeline */
+    .timeline-section {
+      padding: 60px 0;
+    }
+    
+    .timeline-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 40px;
+    }
+    
+    .timeline-header {
+      text-align: center;
+      margin-bottom: 40px;
+    }
+    
+    .timeline-header h3 {
+      font-size: 28px;
+      font-weight: 600;
+    }
+    
+    .timeline {
+      display: flex;
+      justify-content: space-between;
+      position: relative;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    
+    .timeline::before {
+      content: '';
+      position: absolute;
+      top: 24px;
+      left: 10%;
+      right: 10%;
+      height: 2px;
+      background: linear-gradient(90deg, var(--teal), var(--blue), var(--purple));
+    }
+    
+    .timeline-item {
+      text-align: center;
+      position: relative;
+      flex: 1;
+    }
+    
+    .timeline-dot {
+      width: 20px;
+      height: 20px;
+      background: var(--teal);
+      border: 4px solid var(--bg-800);
+      border-radius: 50%;
+      margin: 14px auto 20px;
+    }
+    
+    .timeline-item:nth-child(2) .timeline-dot { background: var(--blue); }
+    .timeline-item:nth-child(3) .timeline-dot { background: var(--cyan); }
+    .timeline-item:nth-child(4) .timeline-dot { background: var(--purple); }
+    
+    .timeline-year {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--teal);
+      margin-bottom: 8px;
+    }
+    
+    .timeline-item:nth-child(2) .timeline-year { color: var(--blue); }
+    .timeline-item:nth-child(3) .timeline-year { color: var(--cyan); }
+    .timeline-item:nth-child(4) .timeline-year { color: var(--purple); }
+    
+    .timeline-text {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    @media (max-width: 700px) {
+      .timeline { flex-direction: column; gap: 24px; }
+      .timeline::before { display: none; }
+    }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--bg-700);
+      padding: 40px 0;
+      margin-top: 60px;
+    }
+    
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover { color: var(--teal); }
+    
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; gap: 16px; }
+      .hero { padding: 60px 0 40px; }
+      .hero-stats { gap: 32px; }
+      .hero-stat-value { font-size: 28px; }
+      .trust-pillars { gap: 32px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="neural-bg"></div>
+  
+  <header>
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">🧬</div>
+          <div class="logo-text">Swarm<span>Hive</span></div>
+        </div>
+        <nav class="nav-links">
+          <a href="#models">Models</a>
+          <a href="#llms">LLMs</a>
+          <a href="#infra">Infrastructure</a>
+          <a href="https://swarmos.eth.limo" class="primary">Deploy →</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badges">
+          <div class="hero-badge">
+            <span>🧬</span>
+            <span class="mono">swarmhive.eth</span>
+          </div>
+          <div class="hero-badge secondary">
+            <span>⚡</span>
+            <span>2 Years Building</span>
+          </div>
+        </div>
+        
+        <h1>Sovereign <span class="gradient">AI Models</span></h1>
+        
+        <p class="hero-sub">
+          Production-grade medical imaging AI and LLMs. Built on MONAI. Trained on our GPUs. 
+          Running on our rails. Your data never leaves the swarm.
+        </p>
+        
+        <div class="hero-stats">
+          <div class="hero-stat">
+            <div class="hero-stat-value">12+</div>
+            <div class="hero-stat-label">Models</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">296</div>
+            <div class="hero-stat-label">GPUs</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">8.6TB</div>
+            <div class="hero-stat-label">VRAM</div>
+          </div>
+          <div class="hero-stat">
+            <div class="hero-stat-value">94%+</div>
+            <div class="hero-stat-label">Accuracy</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Foundation -->
+    <section class="foundation-section">
+      <div class="container">
+        <div class="foundation-card">
+          <div class="foundation-logo">
+            <div class="monai-logo">M</div>
+            <div class="monai-text">MONAI</div>
+          </div>
+          <div class="foundation-content">
+            <h3>Built on MONAI Foundation</h3>
+            <p>
+              All our medical imaging models are built on NVIDIA's Medical Open Network for AI (MONAI). 
+              Enterprise-grade PyTorch framework for healthcare imaging. FDA-ready architectures. 
+              Battle-tested in production at major health systems worldwide.
+            </p>
+            <div class="foundation-features">
+              <div class="foundation-feature">
+                <span class="icon">✓</span>
+                <span>DICOM Native</span>
+              </div>
+              <div class="foundation-feature">
+                <span class="icon">✓</span>
+                <span>3D Medical Imaging</span>
+              </div>
+              <div class="foundation-feature">
+                <span class="icon">✓</span>
+                <span>HIPAA Compatible</span>
+              </div>
+              <div class="foundation-feature">
+                <span class="icon">✓</span>
+                <span>FDA Pathway</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Medical Models -->
+    <section class="models-section" id="models">
+      <div class="container">
+        <div class="section-header">
+          <h2>Medical Imaging Models</h2>
+          <p>Production-ready models for radiology workflows</p>
+        </div>
+        
+        <div class="models-grid">
+          <!-- QueenBee Spine -->
+          <div class="model-card featured">
+            <div class="model-header">
+              <div class="model-icon medical">🦴</div>
+              <span class="model-badge production">Production</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Spine</div>
+              <div class="model-variant">v2.1 • MONAI SwinUNETR</div>
+              <div class="model-desc">
+                Lumbar MRI stenosis classification. Multi-level analysis with clinical report generation. Trained on 10K+ annotated studies.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">24 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~2.8s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">DICOM/NIfTI</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">JSON + PDF</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 94%"></div>
+                </div>
+                <span class="accuracy-value">94.2%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+          
+          <!-- Foot/Ankle -->
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon medical">🦶</div>
+              <span class="model-badge production">Production</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Foot</div>
+              <div class="model-variant">v1.8 • MONAI DenseNet</div>
+              <div class="model-desc">
+                Foot and ankle pathology detection. Fractures, arthritis, soft tissue abnormalities. Podiatry-focused training.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">16 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~1.9s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">X-Ray/MRI</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">JSON + Viz</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 91%"></div>
+                </div>
+                <span class="accuracy-value">91.7%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+          
+          <!-- Chest -->
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon medical">🫁</div>
+              <span class="model-badge production">Production</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Chest</div>
+              <div class="model-variant">v2.0 • MONAI ViT</div>
+              <div class="model-desc">
+                Chest X-ray and CT analysis. Nodule detection, pneumonia, cardiomegaly. Multi-finding classification.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">24 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~2.4s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">CXR/CT</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">JSON + Heatmap</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 93%"></div>
+                </div>
+                <span class="accuracy-value">93.1%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+          
+          <!-- Brain -->
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon medical">🧠</div>
+              <span class="model-badge beta">Beta</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Brain</div>
+              <div class="model-variant">v0.9 • MONAI UNet</div>
+              <div class="model-desc">
+                Brain MRI segmentation and analysis. Tumor detection, lesion quantification, volumetrics.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">32 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~4.2s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">MRI T1/T2</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">Segmentation</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 89%"></div>
+                </div>
+                <span class="accuracy-value">89.4%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+          
+          <!-- Knee -->
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon medical">🦵</div>
+              <span class="model-badge beta">Beta</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Knee</div>
+              <div class="model-variant">v0.8 • MONAI ResNet</div>
+              <div class="model-desc">
+                Knee MRI analysis. ACL/MCL tears, meniscus pathology, cartilage grading. Sports medicine focus.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">24 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~3.1s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">MRI</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">JSON + Report</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 88%"></div>
+                </div>
+                <span class="accuracy-value">88.2%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+          
+          <!-- Shoulder -->
+          <div class="model-card">
+            <div class="model-header">
+              <div class="model-icon medical">💪</div>
+              <span class="model-badge research">Research</span>
+            </div>
+            <div class="model-body">
+              <div class="model-name">QueenBee-Shoulder</div>
+              <div class="model-variant">v0.5 • MONAI 3D</div>
+              <div class="model-desc">
+                Shoulder MRI rotator cuff analysis. Tear classification, muscle atrophy grading.
+              </div>
+              <div class="model-specs">
+                <div class="model-spec">
+                  <div class="model-spec-label">VRAM</div>
+                  <div class="model-spec-value">24 GB</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Inference</div>
+                  <div class="model-spec-value highlight">~3.5s</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Input</div>
+                  <div class="model-spec-value">MRI</div>
+                </div>
+                <div class="model-spec">
+                  <div class="model-spec-label">Output</div>
+                  <div class="model-spec-value">JSON</div>
+                </div>
+              </div>
+            </div>
+            <div class="model-footer">
+              <div class="model-accuracy">
+                <div class="accuracy-bar">
+                  <div class="accuracy-fill" style="width: 85%"></div>
+                </div>
+                <span class="accuracy-value">85.1%</span>
+              </div>
+              <a href="#" class="model-link">View weights →</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- LLMs -->
+    <section class="llm-section" id="llms">
+      <div class="container">
+        <div class="section-header">
+          <h2>Local LLMs</h2>
+          <p>Sovereign language models running on our GPUs</p>
+        </div>
+        
+        <div class="llm-grid">
+          <!-- Med42 -->
+          <div class="llm-card">
+            <div class="llm-header">
+              <div class="llm-icon">🏥</div>
+              <div class="llm-title">
+                <div class="llm-name">Med42-v2</div>
+                <div class="llm-params">70B Parameters</div>
+              </div>
+            </div>
+            <div class="llm-desc">
+              Clinical-grade medical LLM. Report generation, clinical reasoning, differential diagnosis. 
+              Fine-tuned on medical literature and clinical notes.
+            </div>
+            <div class="llm-specs">
+              <div class="llm-spec"><strong>Context:</strong> 8K tokens</div>
+              <div class="llm-spec"><strong>VRAM:</strong> 140GB (4-bit)</div>
+              <div class="llm-spec"><strong>Speed:</strong> ~40 tok/s</div>
+            </div>
+          </div>
+          
+          <!-- QwQ -->
+          <div class="llm-card">
+            <div class="llm-header">
+              <div class="llm-icon">🤔</div>
+              <div class="llm-title">
+                <div class="llm-name">QwQ</div>
+                <div class="llm-params">32B Parameters</div>
+              </div>
+            </div>
+            <div class="llm-desc">
+              Reasoning-focused LLM from Qwen. Chain-of-thought, complex problem solving, 
+              multi-step analysis. Excellent for diagnostic reasoning chains.
+            </div>
+            <div class="llm-specs">
+              <div class="llm-spec"><strong>Context:</strong> 32K tokens</div>
+              <div class="llm-spec"><strong>VRAM:</strong> 48GB (4-bit)</div>
+              <div class="llm-spec"><strong>Speed:</strong> ~65 tok/s</div>
+            </div>
+          </div>
+          
+          <!-- Qwen -->
+          <div class="llm-card">
+            <div class="llm-header">
+              <div class="llm-icon">🌐</div>
+              <div class="llm-title">
+                <div class="llm-name">Qwen2.5</div>
+                <div class="llm-params">72B Parameters</div>
+              </div>
+            </div>
+            <div class="llm-desc">
+              State-of-the-art general purpose LLM. Multilingual, code generation, 
+              long-context understanding. Our workhorse for complex tasks.
+            </div>
+            <div class="llm-specs">
+              <div class="llm-spec"><strong>Context:</strong> 128K tokens</div>
+              <div class="llm-spec"><strong>VRAM:</strong> 150GB (4-bit)</div>
+              <div class="llm-spec"><strong>Speed:</strong> ~35 tok/s</div>
+            </div>
+          </div>
+          
+          <!-- Mistral -->
+          <div class="llm-card">
+            <div class="llm-header">
+              <div class="llm-icon">🌪️</div>
+              <div class="llm-title">
+                <div class="llm-name">Mistral-Large</div>
+                <div class="llm-params">123B Parameters</div>
+              </div>
+            </div>
+            <div class="llm-desc">
+              European frontier model. Excellent instruction following, strong reasoning, 
+              enterprise-ready. Top-tier code and analysis capabilities.
+            </div>
+            <div class="llm-specs">
+              <div class="llm-spec"><strong>Context:</strong> 32K tokens</div>
+              <div class="llm-spec"><strong>VRAM:</strong> 200GB (4-bit)</div>
+              <div class="llm-spec"><strong>Speed:</strong> ~28 tok/s</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Infrastructure -->
+    <section class="infra-section" id="infra">
+      <div class="container">
+        <div class="section-header">
+          <h2>Our Infrastructure</h2>
+          <p>Sovereign compute. No cloud dependencies.</p>
+        </div>
+        
+        <div class="infra-grid">
+          <div class="infra-card">
+            <div class="infra-icon">⚡</div>
+            <div class="infra-value">48</div>
+            <div class="infra-label">RTX 5090 GPUs</div>
+          </div>
+          <div class="infra-card">
+            <div class="infra-icon">🔥</div>
+            <div class="infra-value">48</div>
+            <div class="infra-label">RTX 6000 Ada</div>
+          </div>
+          <div class="infra-card">
+            <div class="infra-icon">💪</div>
+            <div class="infra-value">200</div>
+            <div class="infra-label">RTX 3090 GPUs</div>
+          </div>
+          <div class="infra-card">
+            <div class="infra-icon">☀️</div>
+            <div class="infra-value">100%</div>
+            <div class="infra-label">Solar Powered</div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Links -->
+    <section class="links-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Open Source</h2>
+          <p>Transparency. Verifiability. Community.</p>
+        </div>
+        
+        <div class="links-grid">
+          <a href="https://huggingface.co/sudohash" target="_blank" class="link-card">
+            <div class="link-icon">🤗</div>
+            <div class="link-title">Hugging Face</div>
+            <div class="link-url">huggingface.co/sudohash</div>
+          </a>
+          <a href="https://github.com/sudohash" target="_blank" class="link-card">
+            <div class="link-icon">💻</div>
+            <div class="link-title">GitHub</div>
+            <div class="link-url">github.com/sudohash</div>
+          </a>
+          <a href="https://swarmorb.eth.limo" target="_blank" class="link-card">
+            <div class="link-icon">🔮</div>
+            <div class="link-title">SwarmOrb</div>
+            <div class="link-url">swarmorb.eth.limo</div>
+          </a>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Trust -->
+    <section class="trust-section">
+      <div class="container">
+        <div class="trust-card">
+          <h2>Local. Sovereign. <span class="gradient">Trusted.</span></h2>
+          
+          <div class="trust-pillars">
+            <div class="trust-pillar">
+              <div class="trust-pillar-icon">🏠</div>
+              <div class="trust-pillar-title">Local</div>
+              <div class="trust-pillar-desc">Your data stays on-prem</div>
+            </div>
+            <div class="trust-pillar">
+              <div class="trust-pillar-icon">🔐</div>
+              <div class="trust-pillar-title">Sovereign</div>
+              <div class="trust-pillar-desc">We own the weights</div>
+            </div>
+            <div class="trust-pillar">
+              <div class="trust-pillar-icon">✅</div>
+              <div class="trust-pillar-title">Trusted</div>
+              <div class="trust-pillar-desc">Cryptographically proven</div>
+            </div>
+            <div class="trust-pillar">
+              <div class="trust-pillar-icon">⚡</div>
+              <div class="trust-pillar-title">Fast</div>
+              <div class="trust-pillar-desc">Dedicated GPU inference</div>
+            </div>
+          </div>
+          
+          <p class="trust-tagline">
+            No cloud APIs. No data leaving your facility. No third-party dependencies.<br>
+            <strong>We own the rails. We own the compute. We own the models.</strong>
+          </p>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Timeline -->
+    <section class="timeline-section">
+      <div class="container">
+        <div class="timeline-card">
+          <div class="timeline-header">
+            <h3>Two Years of Building</h3>
+          </div>
+          
+          <div class="timeline">
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-year">2023</div>
+              <div class="timeline-text">First GPU rack<br>Mining + AI research</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-year">2024</div>
+              <div class="timeline-text">MONAI integration<br>Medical AI focus</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-year">Late 2024</div>
+              <div class="timeline-text">SwarmOS launch<br>ENS identity stack</div>
+            </div>
+            <div class="timeline-item">
+              <div class="timeline-dot"></div>
+              <div class="timeline-year">2025</div>
+              <div class="timeline-text">Production ready<br>Client onboarding</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-links">
+          <a href="https://swarmos.eth.limo" target="_blank">SwarmOS</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb</a>
+          <a href="https://swarmbee.eth.limo" target="_blank">SwarmBee</a>
+          <a href="https://swarmbank.eth.limo" target="_blank">SwarmBank</a>
+        </div>
+        <div class="footer-copy">
+          <span class="mono">swarmhive.eth</span> · SudoHash LLC · Florida · Solar Powered
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

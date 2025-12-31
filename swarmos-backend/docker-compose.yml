@@ -1,0 +1,146 @@
+version: '3.8'
+
+# SwarmOS Local Development Stack
+# 
+# Usage:
+#   docker-compose up -d          # Start all services
+#   docker-compose logs -f bee1   # Watch Bee-1 logs
+#   docker-compose down           # Stop all services
+
+services:
+  # =========================================================================
+  # Bee-1 Controller (The Queen)
+  # =========================================================================
+  bee1:
+    build:
+      context: .
+      dockerfile: bee1/Dockerfile
+    ports:
+      - "8000:8000"
+    environment:
+      - BEE1_HOST=0.0.0.0
+      - BEE1_PORT=8000
+      - BEE1_ENS=swarmos.eth
+      - REDIS_URL=redis://redis:6379/0
+      - DATABASE_URL=sqlite:///./data/swarmledger.db
+      - JOB_FEE_USD=0.10
+    volumes:
+      - ./data:/app/data
+      - ./audit:/app/audit
+    depends_on:
+      - redis
+    networks:
+      - swarmnet
+    restart: unless-stopped
+
+  # =========================================================================
+  # Bee-2 Worker (GPU Node - Example)
+  # =========================================================================
+  bee2-01:
+    build:
+      context: .
+      dockerfile: bee2/Dockerfile
+    environment:
+      - WORKER_ENS=bee-01.swarmbee.eth
+      - GPU_MODEL=RTX 5090
+      - VRAM_GB=32
+      - BEE1_URL=http://bee1:8000
+      - WORKER_IP=10.0.0.11
+    depends_on:
+      - bee1
+    networks:
+      - swarmnet
+    restart: unless-stopped
+    # In production, add GPU passthrough:
+    # deploy:
+    #   resources:
+    #     reservations:
+    #       devices:
+    #         - driver: nvidia
+    #           count: all
+    #           capabilities: [gpu]
+
+  bee2-02:
+    build:
+      context: .
+      dockerfile: bee2/Dockerfile
+    environment:
+      - WORKER_ENS=bee-02.swarmbee.eth
+      - GPU_MODEL=RTX 6000 Ada
+      - VRAM_GB=48
+      - BEE1_URL=http://bee1:8000
+      - WORKER_IP=10.0.0.12
+    depends_on:
+      - bee1
+    networks:
+      - swarmnet
+    restart: unless-stopped
+
+  # =========================================================================
+  # Redis (Job Queue)
+  # =========================================================================
+  redis:
+    image: redis:7-alpine
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    networks:
+      - swarmnet
+    restart: unless-stopped
+
+  # =========================================================================
+  # IPFS (Content Storage)
+  # =========================================================================
+  ipfs:
+    image: ipfs/kubo:latest
+    ports:
+      - "5001:5001"   # API
+      - "8080:8080"   # Gateway
+    volumes:
+      - ipfs_data:/data/ipfs
+    environment:
+      - IPFS_PROFILE=server
+    networks:
+      - swarmnet
+    restart: unless-stopped
+
+  # =========================================================================
+  # Epoch Sealer (Cron Job)
+  # =========================================================================
+  epoch-sealer:
+    build:
+      context: .
+      dockerfile: epoch-sealer/Dockerfile
+    environment:
+      - DATABASE_URL=sqlite:///./data/swarmledger.db
+      - BEE1_URL=http://bee1:8000
+      - IPFS_API_URL=http://ipfs:5001
+      - EPOCH_DURATION_HOURS=24
+      - WORK_POOL_PCT=70
+      - READINESS_POOL_PCT=30
+      - PROTOCOL_FEE_PCT=2
+      - OPERATOR_FEE_PCT=5
+    volumes:
+      - ./data:/app/data
+      - ./audit:/app/audit
+    depends_on:
+      - bee1
+      - ipfs
+    networks:
+      - swarmnet
+    # Run every 24 hours (or use external cron)
+    # In production, use systemd timer or k8s cronjob
+
+# =============================================================================
+# Networks & Volumes
+# =============================================================================
+
+networks:
+  swarmnet:
+    driver: bridge
+
+volumes:
+  redis_data:
+  ipfs_data:

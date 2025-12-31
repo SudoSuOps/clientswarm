@@ -1,0 +1,1295 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ClientSwarm | Dashboard</title>
+  <meta name="description" content="ClientSwarm Dashboard - Manage your sovereign medical AI account">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏥</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-950: #030305;
+      --bg-900: #0a0a0d;
+      --bg-800: #101014;
+      --bg-700: #1a1a20;
+      --bg-600: #252530;
+      --bg-500: #32323e;
+      --accent: #06b6d4;
+      --accent-bright: #22d3ee;
+      --accent-dim: #0891b2;
+      --green: #22c55e;
+      --green-dim: #16a34a;
+      --amber: #f59e0b;
+      --red: #ef4444;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-950);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Layout */
+    .app {
+      display: grid;
+      grid-template-columns: 260px 1fr;
+      min-height: 100vh;
+    }
+    
+    @media (max-width: 900px) {
+      .app { grid-template-columns: 1fr; }
+      .sidebar { display: none; }
+    }
+    
+    /* Sidebar */
+    .sidebar {
+      background: var(--bg-900);
+      border-right: 1px solid var(--bg-700);
+      padding: 24px;
+      display: flex;
+      flex-direction: column;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      margin-bottom: 32px;
+    }
+    
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: linear-gradient(135deg, var(--accent) 0%, var(--green) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    
+    .logo-text {
+      font-size: 20px;
+      font-weight: 700;
+    }
+    
+    .logo-text span { color: var(--accent); }
+    
+    /* Account card */
+    .account-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 12px;
+      padding: 16px;
+      margin-bottom: 24px;
+    }
+    
+    .account-ens {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      color: var(--accent);
+      margin-bottom: 12px;
+      word-break: break-all;
+    }
+    
+    .account-balance {
+      display: flex;
+      align-items: baseline;
+      gap: 6px;
+      margin-bottom: 4px;
+    }
+    
+    .account-balance .amount {
+      font-size: 28px;
+      font-weight: 700;
+      color: var(--green);
+    }
+    
+    .account-balance .currency {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .account-scans {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    .account-scans span {
+      color: var(--text);
+      font-weight: 600;
+    }
+    
+    /* Nav */
+    .nav {
+      flex: 1;
+    }
+    
+    .nav-section {
+      margin-bottom: 24px;
+    }
+    
+    .nav-label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      padding: 0 12px;
+    }
+    
+    .nav-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      border-radius: 8px;
+      color: var(--text-dim);
+      text-decoration: none;
+      font-size: 14px;
+      transition: all 0.15s;
+      cursor: pointer;
+    }
+    
+    .nav-item:hover {
+      background: var(--bg-700);
+      color: var(--text);
+    }
+    
+    .nav-item.active {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent);
+    }
+    
+    .nav-item .icon {
+      font-size: 18px;
+      width: 24px;
+      text-align: center;
+    }
+    
+    .nav-item .badge {
+      margin-left: auto;
+      background: var(--accent);
+      color: var(--bg-950);
+      font-size: 11px;
+      font-weight: 600;
+      padding: 2px 8px;
+      border-radius: 100px;
+    }
+    
+    /* Sidebar footer */
+    .sidebar-footer {
+      border-top: 1px solid var(--bg-700);
+      padding-top: 16px;
+    }
+    
+    .sidebar-footer a {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 13px;
+      padding: 8px 0;
+      transition: color 0.15s;
+    }
+    
+    .sidebar-footer a:hover { color: var(--text); }
+    
+    /* Main content */
+    .main {
+      padding: 32px;
+      overflow-y: auto;
+    }
+    
+    .main-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 32px;
+    }
+    
+    .main-header h1 {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      transition: all 0.2s;
+      cursor: pointer;
+      border: none;
+    }
+    
+    .btn-primary {
+      background: var(--accent);
+      color: var(--bg-950);
+    }
+    
+    .btn-primary:hover {
+      background: var(--accent-bright);
+    }
+    
+    .btn-success {
+      background: var(--green);
+      color: var(--bg-950);
+    }
+    
+    .btn-success:hover {
+      background: var(--green-dim);
+    }
+    
+    .btn-outline {
+      background: transparent;
+      color: var(--text-dim);
+      border: 1px solid var(--bg-600);
+    }
+    
+    .btn-outline:hover {
+      background: var(--bg-700);
+      color: var(--text);
+    }
+    
+    .btn-sm {
+      padding: 8px 14px;
+      font-size: 13px;
+    }
+    
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+    
+    @media (max-width: 1200px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .stat-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+    }
+    
+    .stat-value {
+      font-size: 32px;
+      font-weight: 700;
+    }
+    
+    .stat-value.green { color: var(--green); }
+    .stat-value.accent { color: var(--accent); }
+    
+    .stat-sub {
+      font-size: 13px;
+      color: var(--text-dim);
+      margin-top: 4px;
+    }
+    
+    /* Cards */
+    .card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 12px;
+      margin-bottom: 24px;
+    }
+    
+    .card-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--bg-600);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .card-title {
+      font-size: 16px;
+      font-weight: 600;
+    }
+    
+    .card-body {
+      padding: 24px;
+    }
+    
+    /* Table */
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .table th {
+      text-align: left;
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 12px 16px;
+      border-bottom: 1px solid var(--bg-600);
+    }
+    
+    .table td {
+      padding: 16px;
+      border-bottom: 1px solid var(--bg-700);
+      font-size: 14px;
+    }
+    
+    .table tr:last-child td {
+      border-bottom: none;
+    }
+    
+    .table tr:hover td {
+      background: var(--bg-700);
+    }
+    
+    /* Status badges */
+    .status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .status-completed {
+      background: rgba(34, 197, 94, 0.1);
+      color: var(--green);
+    }
+    
+    .status-processing {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+    }
+    
+    .status-pending {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--accent);
+    }
+    
+    .status-dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    
+    /* New Scan Modal */
+    .modal-overlay {
+      position: fixed;
+      inset: 0;
+      background: rgba(0, 0, 0, 0.8);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      z-index: 1000;
+      opacity: 0;
+      visibility: hidden;
+      transition: all 0.2s;
+    }
+    
+    .modal-overlay.active {
+      opacity: 1;
+      visibility: visible;
+    }
+    
+    .modal {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      width: 100%;
+      max-width: 500px;
+      max-height: 90vh;
+      overflow-y: auto;
+      transform: scale(0.95);
+      transition: transform 0.2s;
+    }
+    
+    .modal-overlay.active .modal {
+      transform: scale(1);
+    }
+    
+    .modal-header {
+      padding: 24px;
+      border-bottom: 1px solid var(--bg-600);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .modal-header h2 {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .modal-close {
+      background: none;
+      border: none;
+      color: var(--text-muted);
+      font-size: 24px;
+      cursor: pointer;
+      padding: 4px;
+      line-height: 1;
+    }
+    
+    .modal-close:hover { color: var(--text); }
+    
+    .modal-body {
+      padding: 24px;
+    }
+    
+    .modal-footer {
+      padding: 24px;
+      border-top: 1px solid var(--bg-600);
+      display: flex;
+      gap: 12px;
+      justify-content: flex-end;
+    }
+    
+    /* Form elements */
+    .form-group {
+      margin-bottom: 20px;
+    }
+    
+    .form-label {
+      display: block;
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+    }
+    
+    .form-input {
+      width: 100%;
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--text);
+      transition: border-color 0.15s;
+    }
+    
+    .form-input:focus {
+      outline: none;
+      border-color: var(--accent);
+    }
+    
+    .form-input::placeholder {
+      color: var(--text-muted);
+    }
+    
+    .form-select {
+      width: 100%;
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 8px;
+      padding: 12px 16px;
+      font-size: 14px;
+      color: var(--text);
+      cursor: pointer;
+    }
+    
+    .form-hint {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 6px;
+    }
+    
+    /* Upload zone */
+    .upload-zone {
+      border: 2px dashed var(--bg-500);
+      border-radius: 12px;
+      padding: 40px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.2s;
+    }
+    
+    .upload-zone:hover {
+      border-color: var(--accent);
+      background: rgba(6, 182, 212, 0.05);
+    }
+    
+    .upload-zone .icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .upload-zone .text {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .upload-zone .text span {
+      color: var(--accent);
+      font-weight: 500;
+    }
+    
+    /* Cost preview */
+    .cost-preview {
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 8px;
+      padding: 16px;
+      margin-top: 20px;
+    }
+    
+    .cost-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 14px;
+    }
+    
+    .cost-row.total {
+      border-top: 1px solid var(--bg-600);
+      margin-top: 8px;
+      padding-top: 16px;
+      font-weight: 600;
+    }
+    
+    .cost-row .label { color: var(--text-dim); }
+    .cost-row .value { color: var(--text); }
+    .cost-row.total .value { color: var(--green); font-size: 18px; }
+    
+    /* Add Credits Modal */
+    .credits-options {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 12px;
+      margin-bottom: 20px;
+    }
+    
+    .credit-option {
+      background: var(--bg-900);
+      border: 2px solid var(--bg-600);
+      border-radius: 12px;
+      padding: 20px;
+      text-align: center;
+      cursor: pointer;
+      transition: all 0.15s;
+    }
+    
+    .credit-option:hover {
+      border-color: var(--bg-500);
+    }
+    
+    .credit-option.selected {
+      border-color: var(--accent);
+      background: rgba(6, 182, 212, 0.05);
+    }
+    
+    .credit-option .amount {
+      font-size: 24px;
+      font-weight: 700;
+      color: var(--green);
+      margin-bottom: 4px;
+    }
+    
+    .credit-option .scans {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    .credit-option .bonus {
+      font-size: 11px;
+      color: var(--amber);
+      margin-top: 8px;
+    }
+    
+    /* Settings page */
+    .settings-section {
+      margin-bottom: 32px;
+    }
+    
+    .settings-section h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      padding-bottom: 12px;
+      border-bottom: 1px solid var(--bg-600);
+    }
+    
+    .key-display {
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      word-break: break-all;
+      color: var(--text-dim);
+    }
+    
+    .key-display .label {
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      margin-bottom: 8px;
+      font-family: 'Inter', sans-serif;
+    }
+    
+    .key-actions {
+      display: flex;
+      gap: 8px;
+      margin-top: 12px;
+    }
+    
+    /* Info box */
+    .info-box {
+      background: rgba(6, 182, 212, 0.1);
+      border: 1px solid rgba(6, 182, 212, 0.2);
+      border-radius: 8px;
+      padding: 16px;
+      font-size: 14px;
+      color: var(--text-dim);
+      display: flex;
+      gap: 12px;
+    }
+    
+    .info-box .icon {
+      color: var(--accent);
+      font-size: 20px;
+      flex-shrink: 0;
+    }
+    
+    .info-box strong {
+      color: var(--text);
+    }
+    
+    /* Receipt viewer */
+    .receipt-box {
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 8px;
+      padding: 20px;
+    }
+    
+    .receipt-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 16px;
+      padding-bottom: 16px;
+      border-bottom: 1px solid var(--bg-600);
+    }
+    
+    .receipt-title {
+      font-size: 14px;
+      font-weight: 600;
+    }
+    
+    .receipt-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 8px 0;
+      font-size: 13px;
+    }
+    
+    .receipt-row .label { color: var(--text-muted); }
+    .receipt-row .value { 
+      color: var(--text); 
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+    }
+    
+    .receipt-verified {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--bg-600);
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      color: var(--green);
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    /* Mobile header */
+    .mobile-header {
+      display: none;
+      background: var(--bg-900);
+      border-bottom: 1px solid var(--bg-700);
+      padding: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    
+    @media (max-width: 900px) {
+      .mobile-header { display: flex; align-items: center; justify-content: space-between; }
+      .main { padding: 20px; }
+      .stats-grid { grid-template-columns: 1fr 1fr; }
+    }
+  </style>
+</head>
+<body>
+  <div class="app">
+    <!-- Sidebar -->
+    <aside class="sidebar">
+      <div class="logo">
+        <div class="logo-icon">🏥</div>
+        <div class="logo-text">Client<span>Swarm</span></div>
+      </div>
+      
+      <!-- Account Card -->
+      <div class="account-card">
+        <div class="account-ens" id="account-ens">xyzclinic.clientswarm.eth</div>
+        <div class="account-balance">
+          <span class="amount" id="balance-amount">$24.50</span>
+          <span class="currency">USDC</span>
+        </div>
+        <div class="account-scans">
+          <span id="scans-available">245</span> scans available
+        </div>
+      </div>
+      
+      <!-- Navigation -->
+      <nav class="nav">
+        <div class="nav-section">
+          <div class="nav-label">Main</div>
+          <a class="nav-item active" data-page="dashboard">
+            <span class="icon">📊</span>
+            Dashboard
+          </a>
+          <a class="nav-item" data-page="scans">
+            <span class="icon">🔬</span>
+            My Scans
+            <span class="badge" id="pending-count">2</span>
+          </a>
+          <a class="nav-item" data-page="new-scan" id="nav-new-scan">
+            <span class="icon">➕</span>
+            New Scan
+          </a>
+        </div>
+        
+        <div class="nav-section">
+          <div class="nav-label">Account</div>
+          <a class="nav-item" data-page="credits" id="nav-credits">
+            <span class="icon">💰</span>
+            Add Credits
+          </a>
+          <a class="nav-item" data-page="settings">
+            <span class="icon">⚙️</span>
+            Settings
+          </a>
+        </div>
+      </nav>
+      
+      <!-- Footer -->
+      <div class="sidebar-footer">
+        <a href="https://swarmorb.eth.limo" target="_blank">🧿 SwarmOrb</a>
+        <a href="https://swarmos.eth.limo" target="_blank">🐝 SwarmOS</a>
+      </div>
+    </aside>
+    
+    <!-- Main Content -->
+    <main class="main">
+      <!-- Mobile Header -->
+      <div class="mobile-header">
+        <div class="logo">
+          <div class="logo-icon" style="width:32px;height:32px;font-size:16px;">🏥</div>
+          <div class="logo-text" style="font-size:18px;">Client<span>Swarm</span></div>
+        </div>
+        <button class="btn btn-sm btn-primary" onclick="showModal('new-scan')">+ New Scan</button>
+      </div>
+      
+      <!-- Dashboard Page -->
+      <div id="page-dashboard" class="page">
+        <div class="main-header">
+          <h1>Dashboard</h1>
+          <button class="btn btn-primary" onclick="showModal('new-scan')">+ New Scan</button>
+        </div>
+        
+        <!-- Stats -->
+        <div class="stats-grid">
+          <div class="stat-card">
+            <div class="stat-label">Balance</div>
+            <div class="stat-value green">$24.50</div>
+            <div class="stat-sub">245 scans available</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Scans This Month</div>
+            <div class="stat-value accent">127</div>
+            <div class="stat-sub">↑ 23% from last month</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Avg Processing Time</div>
+            <div class="stat-value">3.2s</div>
+            <div class="stat-sub">Per scan</div>
+          </div>
+          <div class="stat-card">
+            <div class="stat-label">Total Spent</div>
+            <div class="stat-value">$847.30</div>
+            <div class="stat-sub">8,473 scans all-time</div>
+          </div>
+        </div>
+        
+        <!-- Recent Scans -->
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">Recent Scans</span>
+            <a class="btn btn-sm btn-outline" data-page="scans">View All →</a>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Job ID</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Epoch</th>
+                <th>Cost</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0847</td>
+                <td>Spine MRI</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">2 min ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0846</td>
+                <td>Spine MRI</td>
+                <td><span class="status status-processing"><span class="status-dot"></span>Processing</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">5 min ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0845</td>
+                <td>Brain MRI</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">12 min ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0844</td>
+                <td>Spine MRI</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">18 min ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0843</td>
+                <td>Clinical Report</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">25 min ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Scans Page -->
+      <div id="page-scans" class="page" style="display:none">
+        <div class="main-header">
+          <h1>My Scans</h1>
+          <button class="btn btn-primary" onclick="showModal('new-scan')">+ New Scan</button>
+        </div>
+        
+        <div class="card">
+          <div class="card-header">
+            <span class="card-title">All Scans</span>
+            <div style="display:flex;gap:8px;">
+              <select class="form-select" style="width:auto;padding:8px 12px;">
+                <option>All Types</option>
+                <option>Spine MRI</option>
+                <option>Brain MRI</option>
+                <option>Clinical Report</option>
+              </select>
+              <select class="form-select" style="width:auto;padding:8px 12px;">
+                <option>All Status</option>
+                <option>Completed</option>
+                <option>Processing</option>
+                <option>Pending</option>
+              </select>
+            </div>
+          </div>
+          <table class="table">
+            <thead>
+              <tr>
+                <th>Job ID</th>
+                <th>Type</th>
+                <th>Status</th>
+                <th>Epoch</th>
+                <th>Cost</th>
+                <th>Time</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0847</td>
+                <td>Spine MRI</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">2 min ago</td>
+                <td>
+                  <button class="btn btn-sm btn-outline" onclick="showModal('receipt')">Receipt</button>
+                </td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0846</td>
+                <td>Spine MRI</td>
+                <td><span class="status status-processing"><span class="status-dot"></span>Processing</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">5 min ago</td>
+                <td>—</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--accent)">job-002-0845</td>
+                <td>Brain MRI</td>
+                <td><span class="status status-completed"><span class="status-dot"></span>Completed</span></td>
+                <td class="mono">epoch-002</td>
+                <td class="mono">$0.10</td>
+                <td style="color: var(--text-muted)">12 min ago</td>
+                <td>
+                  <button class="btn btn-sm btn-outline" onclick="showModal('receipt')">Receipt</button>
+                </td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+      
+      <!-- Settings Page -->
+      <div id="page-settings" class="page" style="display:none">
+        <div class="main-header">
+          <h1>Settings</h1>
+        </div>
+        
+        <div class="card">
+          <div class="card-body">
+            <div class="settings-section">
+              <h3>🔑 Your ENS Subdomain</h3>
+              <div class="info-box" style="margin-bottom:20px;">
+                <span class="icon">ℹ️</span>
+                <div>
+                  <strong>You own this subdomain.</strong> The private key below gives you full control over your ClientSwarm identity. Export and backup this key — it cannot be recovered if lost.
+                </div>
+              </div>
+              <div class="key-display">
+                <div class="label">ENS Name</div>
+                <div style="color: var(--accent); font-size: 16px; margin-bottom: 16px;">xyzclinic.clientswarm.eth</div>
+                <div class="label">Private Key (encrypted)</div>
+                <div>0x7f4e••••••••••••••••••••••••••••••••••••••••••••••••3a9b</div>
+                <div class="key-actions">
+                  <button class="btn btn-sm btn-outline">👁 Reveal Key</button>
+                  <button class="btn btn-sm btn-outline">📋 Copy</button>
+                  <button class="btn btn-sm btn-outline">💾 Export Backup</button>
+                </div>
+              </div>
+            </div>
+            
+            <div class="settings-section">
+              <h3>🏥 Clinic Information</h3>
+              <div class="form-group">
+                <label class="form-label">Display Name</label>
+                <input type="text" class="form-input" value="XYZ Orthopedic Clinic" />
+              </div>
+              <div class="form-group">
+                <label class="form-label">Contact Email (optional)</label>
+                <input type="email" class="form-input" placeholder="billing@example.com" />
+                <div class="form-hint">For receipts and notifications only. Not used for authentication.</div>
+              </div>
+              <button class="btn btn-primary">Save Changes</button>
+            </div>
+            
+            <div class="settings-section">
+              <h3>🔔 Notifications</h3>
+              <div style="display:flex;flex-direction:column;gap:12px;">
+                <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+                  <input type="checkbox" checked /> 
+                  <span>Email when scan completes</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+                  <input type="checkbox" checked /> 
+                  <span>Email when balance is low (< 50 scans)</span>
+                </label>
+                <label style="display:flex;align-items:center;gap:12px;cursor:pointer;">
+                  <input type="checkbox" /> 
+                  <span>Weekly usage summary</span>
+                </label>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </main>
+  </div>
+  
+  <!-- New Scan Modal -->
+  <div class="modal-overlay" id="modal-new-scan">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>New Scan</h2>
+        <button class="modal-close" onclick="hideModal('new-scan')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="form-group">
+          <label class="form-label">Scan Type</label>
+          <select class="form-select" id="scan-type">
+            <option value="spine_mri">Spine MRI Analysis</option>
+            <option value="brain_mri">Brain MRI Segmentation</option>
+            <option value="clinical_report">Clinical Report Generation</option>
+          </select>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Upload DICOM</label>
+          <div class="upload-zone">
+            <div class="icon">📁</div>
+            <div class="text">
+              Drag & drop DICOM files or <span>browse</span>
+            </div>
+          </div>
+          <div class="form-hint">Supported: .dcm, .dicom, .zip (DICOM folder)</div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Patient Reference (optional)</label>
+          <input type="text" class="form-input" placeholder="Internal ID for your records" />
+          <div class="form-hint">This is stored locally and not sent to SwarmOS</div>
+        </div>
+        
+        <div class="cost-preview">
+          <div class="cost-row">
+            <span class="label">Scan Type</span>
+            <span class="value">Spine MRI Analysis</span>
+          </div>
+          <div class="cost-row">
+            <span class="label">Unit Price</span>
+            <span class="value">$0.10</span>
+          </div>
+          <div class="cost-row">
+            <span class="label">Quantity</span>
+            <span class="value">1 scan</span>
+          </div>
+          <div class="cost-row total">
+            <span class="label">Total</span>
+            <span class="value">$0.10</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="hideModal('new-scan')">Cancel</button>
+        <button class="btn btn-success">Submit Scan →</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Add Credits Modal -->
+  <div class="modal-overlay" id="modal-credits">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Add Credits</h2>
+        <button class="modal-close" onclick="hideModal('credits')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="info-box" style="margin-bottom:24px;">
+          <span class="icon">💡</span>
+          <div>Credits are pre-loaded <strong>USDC (ERC-20) on Ethereum L1</strong>. $0.10 = 1 scan. Buy in bulk for bonus credits.</div>
+        </div>
+        
+        <div class="credits-options">
+          <div class="credit-option" onclick="selectCredit(this, 10)">
+            <div class="amount">$10</div>
+            <div class="scans">100 scans</div>
+          </div>
+          <div class="credit-option selected" onclick="selectCredit(this, 50)">
+            <div class="amount">$50</div>
+            <div class="scans">500 scans</div>
+            <div class="bonus">Most popular</div>
+          </div>
+          <div class="credit-option" onclick="selectCredit(this, 100)">
+            <div class="amount">$100</div>
+            <div class="scans">1,000 scans</div>
+            <div class="bonus">+50 bonus</div>
+          </div>
+        </div>
+        
+        <div class="form-group">
+          <label class="form-label">Or enter custom amount</label>
+          <input type="number" class="form-input" placeholder="Enter USDC amount" min="1" step="1" />
+          <div class="form-hint">Minimum $1.00 (10 scans)</div>
+        </div>
+        
+        <div class="cost-preview">
+          <div class="cost-row">
+            <span class="label">Amount</span>
+            <span class="value">$50.00 USDC</span>
+          </div>
+          <div class="cost-row">
+            <span class="label">Scans</span>
+            <span class="value">500 scans</span>
+          </div>
+          <div class="cost-row">
+            <span class="label">Chain</span>
+            <span class="value">Ethereum L1</span>
+          </div>
+          <div class="cost-row total">
+            <span class="label">New Balance</span>
+            <span class="value">$74.50</span>
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="hideModal('credits')">Cancel</button>
+        <button class="btn btn-success">Pay with Wallet →</button>
+      </div>
+    </div>
+  </div>
+  
+  <!-- Receipt Modal -->
+  <div class="modal-overlay" id="modal-receipt">
+    <div class="modal">
+      <div class="modal-header">
+        <h2>Job Receipt</h2>
+        <button class="modal-close" onclick="hideModal('receipt')">&times;</button>
+      </div>
+      <div class="modal-body">
+        <div class="receipt-box">
+          <div class="receipt-header">
+            <span class="receipt-title">Cryptographic Receipt</span>
+            <span class="status status-completed"><span class="status-dot"></span>Verified</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Job ID</span>
+            <span class="value">job-002-0847</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Epoch</span>
+            <span class="value">epoch-002</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Client</span>
+            <span class="value">xyzclinic.clientswarm.eth</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Agent</span>
+            <span class="value">bee23.swarmbee.eth</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Type</span>
+            <span class="value">spine_mri</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Cost</span>
+            <span class="value">$0.10 USDC</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Leaf Hash</span>
+            <span class="value">5aa97d62a1ca...6026c0</span>
+          </div>
+          <div class="receipt-row">
+            <span class="label">Merkle Root</span>
+            <span class="value">7ec20e03b05b...472b5</span>
+          </div>
+          <div class="receipt-verified">
+            ✓ Verified on SwarmOrb
+          </div>
+        </div>
+      </div>
+      <div class="modal-footer">
+        <button class="btn btn-outline" onclick="hideModal('receipt')">Close</button>
+        <a href="https://swarmorb.eth.limo/verify" target="_blank" class="btn btn-primary">Verify on SwarmOrb →</a>
+      </div>
+    </div>
+  </div>
+  
+  <script>
+    // Page navigation
+    document.querySelectorAll('[data-page]').forEach(el => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const page = el.dataset.page;
+        
+        // Handle modal triggers
+        if (page === 'new-scan') {
+          showModal('new-scan');
+          return;
+        }
+        if (page === 'credits') {
+          showModal('credits');
+          return;
+        }
+        
+        // Update nav
+        document.querySelectorAll('.nav-item').forEach(n => n.classList.remove('active'));
+        document.querySelector(`[data-page="${page}"]`)?.classList.add('active');
+        
+        // Show page
+        document.querySelectorAll('.page').forEach(p => p.style.display = 'none');
+        document.getElementById(`page-${page}`).style.display = 'block';
+      });
+    });
+    
+    // Modal functions
+    function showModal(id) {
+      document.getElementById(`modal-${id}`).classList.add('active');
+    }
+    
+    function hideModal(id) {
+      document.getElementById(`modal-${id}`).classList.remove('active');
+    }
+    
+    // Credit selection
+    function selectCredit(el, amount) {
+      document.querySelectorAll('.credit-option').forEach(o => o.classList.remove('selected'));
+      el.classList.add('selected');
+    }
+    
+    // Close modals on overlay click
+    document.querySelectorAll('.modal-overlay').forEach(overlay => {
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) {
+          overlay.classList.remove('active');
+        }
+      });
+    });
+    
+    // Escape key closes modals
+    document.addEventListener('keydown', (e) => {
+      if (e.key === 'Escape') {
+        document.querySelectorAll('.modal-overlay.active').forEach(m => m.classList.remove('active'));
+      }
+    });
+  </script>
+</body>
+</html>

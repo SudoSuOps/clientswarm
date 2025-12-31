@@ -1,0 +1,985 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmBee | The Worker Swarm</title>
+  <meta name="description" content="SwarmBee - GPU workers powering sovereign compute. The hive that executes.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🐝</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-950: #030303;
+      --bg-900: #0a0a0a;
+      --bg-800: #111111;
+      --bg-700: #1a1a1a;
+      --bg-600: #262626;
+      --bg-500: #333333;
+      --amber: #f59e0b;
+      --amber-bright: #fbbf24;
+      --amber-dim: #d97706;
+      --green: #10b981;
+      --cyan: #06b6d4;
+      --red: #ef4444;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-950);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Honeycomb background */
+    .hex-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(245, 158, 11, 0.08) 0%, transparent 50%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .hex-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='28' height='49' viewBox='0 0 28 49'%3E%3Cg fill-rule='evenodd'%3E%3Cg fill='%23f59e0b' fill-opacity='0.03'%3E%3Cpath d='M13.99 9.25l13 7.5v15l-13 7.5L1 31.75v-15l12.99-7.5zM3 17.9v12.7l10.99 6.34 11-6.35V17.9l-11-6.34L3 17.9zM0 15l12.98-7.5V0h-2v6.35L0 12.69v2.3zm0 18.5L12.98 41v8h-2v-6.85L0 35.81v-2.3zM15 0v7.5L27.99 15H28v-2.31h-.01L17 6.35V0h-2zm0 49v-8l12.99-7.5H28v2.31h-.01L17 42.15V49h-2z'/%3E%3C/g%3E%3C/g%3E%3C/svg%3E");
+      opacity: 0.5;
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(245, 158, 11, 0.1);
+    }
+    
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-icon {
+      width: 44px;
+      height: 44px;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-bright) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 20px rgba(245, 158, 11, 0.3);
+    }
+    
+    .logo-text {
+      font-size: 24px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-text span { color: var(--amber); }
+    
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--bg-700);
+    }
+    
+    /* Hero */
+    .hero {
+      padding: 100px 0 60px;
+      text-align: center;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(245, 158, 11, 0.1);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--amber);
+      margin-bottom: 28px;
+    }
+    
+    .hero-badge .bee {
+      animation: buzz 0.3s infinite alternate;
+    }
+    
+    @keyframes buzz {
+      from { transform: translateX(-1px) rotate(-2deg); }
+      to { transform: translateX(1px) rotate(2deg); }
+    }
+    
+    .hero h1 {
+      font-size: clamp(48px, 7vw, 72px);
+      font-weight: 700;
+      letter-spacing: -2px;
+      line-height: 1.05;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span { color: var(--amber); }
+    
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-dim);
+      max-width: 550px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    
+    /* Swarm stats */
+    .swarm-stats {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(245, 158, 11, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      margin: 60px 0;
+    }
+    
+    @media (max-width: 800px) {
+      .swarm-stats { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .swarm-stat {
+      background: var(--bg-800);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    
+    .swarm-stat-value {
+      font-size: 42px;
+      font-weight: 700;
+      color: var(--amber);
+      font-family: 'JetBrains Mono', monospace;
+      margin-bottom: 4px;
+    }
+    
+    .swarm-stat-label {
+      font-size: 13px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Worker cards */
+    .workers-section {
+      padding: 60px 0;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .section-header p {
+      color: var(--text-dim);
+      font-size: 16px;
+    }
+    
+    .workers-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    
+    @media (max-width: 900px) {
+      .workers-grid { grid-template-columns: 1fr; }
+    }
+    
+    .worker-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      overflow: hidden;
+      transition: all 0.3s;
+    }
+    
+    .worker-card:hover {
+      border-color: var(--amber);
+      transform: translateY(-4px);
+      box-shadow: 0 20px 40px rgba(0,0,0,0.3);
+    }
+    
+    .worker-card.online { border-top: 3px solid var(--green); }
+    .worker-card.busy { border-top: 3px solid var(--amber); }
+    .worker-card.offline { border-top: 3px solid var(--bg-500); }
+    
+    .worker-header {
+      padding: 24px 24px 16px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .worker-identity {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .worker-icon {
+      width: 48px;
+      height: 48px;
+      background: linear-gradient(135deg, var(--amber) 0%, var(--amber-dim) 100%);
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+    }
+    
+    .worker-name {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 15px;
+      font-weight: 600;
+      color: var(--amber);
+    }
+    
+    .worker-role {
+      font-size: 12px;
+      color: var(--text-muted);
+      margin-top: 2px;
+    }
+    
+    .worker-status {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      padding: 5px 12px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .worker-status.online {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+    }
+    
+    .worker-status.busy {
+      background: rgba(245, 158, 11, 0.1);
+      color: var(--amber);
+    }
+    
+    .worker-status.offline {
+      background: var(--bg-600);
+      color: var(--text-muted);
+    }
+    
+    .worker-status .dot {
+      width: 6px;
+      height: 6px;
+      border-radius: 50%;
+      background: currentColor;
+    }
+    
+    .worker-status.online .dot,
+    .worker-status.busy .dot {
+      animation: pulse 2s infinite;
+    }
+    
+    @keyframes pulse {
+      0%, 100% { opacity: 1; }
+      50% { opacity: 0.4; }
+    }
+    
+    .worker-specs {
+      padding: 0 24px 20px;
+    }
+    
+    .spec-row {
+      display: flex;
+      justify-content: space-between;
+      padding: 10px 0;
+      border-bottom: 1px solid var(--bg-700);
+    }
+    
+    .spec-row:last-child { border-bottom: none; }
+    
+    .spec-label {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .spec-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      font-weight: 500;
+    }
+    
+    .spec-value.gpu { color: var(--green); }
+    .spec-value.vram { color: var(--cyan); }
+    
+    .worker-stats {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 1px;
+      background: var(--bg-600);
+    }
+    
+    .worker-stat {
+      background: var(--bg-900);
+      padding: 16px;
+      text-align: center;
+    }
+    
+    .worker-stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      font-weight: 600;
+      color: var(--text);
+    }
+    
+    .worker-stat-label {
+      font-size: 10px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-top: 4px;
+    }
+    
+    /* Hardware section */
+    .hardware-section {
+      padding: 80px 0;
+    }
+    
+    .hardware-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+    }
+    
+    @media (max-width: 900px) {
+      .hardware-grid { grid-template-columns: 1fr; }
+    }
+    
+    .hardware-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 32px;
+      text-align: center;
+      transition: all 0.2s;
+    }
+    
+    .hardware-card:hover {
+      border-color: var(--amber);
+    }
+    
+    .hardware-icon {
+      font-size: 48px;
+      margin-bottom: 16px;
+    }
+    
+    .hardware-name {
+      font-size: 20px;
+      font-weight: 600;
+      margin-bottom: 8px;
+    }
+    
+    .hardware-count {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 32px;
+      font-weight: 700;
+      color: var(--amber);
+      margin-bottom: 4px;
+    }
+    
+    .hardware-spec {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .hardware-total {
+      margin-top: 16px;
+      padding-top: 16px;
+      border-top: 1px solid var(--bg-600);
+    }
+    
+    .hardware-total-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+    }
+    
+    .hardware-total-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 24px;
+      font-weight: 600;
+      color: var(--green);
+    }
+    
+    /* Join section */
+    .join-section {
+      padding: 80px 0;
+      text-align: center;
+    }
+    
+    .join-card {
+      background: linear-gradient(135deg, rgba(245, 158, 11, 0.1) 0%, rgba(245, 158, 11, 0.02) 100%);
+      border: 1px solid rgba(245, 158, 11, 0.2);
+      border-radius: 24px;
+      padding: 60px 40px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .join-card h2 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 16px;
+    }
+    
+    .join-card h2 span { color: var(--amber); }
+    
+    .join-card p {
+      color: var(--text-dim);
+      font-size: 16px;
+      line-height: 1.6;
+      margin-bottom: 32px;
+    }
+    
+    .join-steps {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 24px;
+      margin-bottom: 32px;
+      text-align: left;
+    }
+    
+    @media (max-width: 600px) {
+      .join-steps { grid-template-columns: 1fr; }
+    }
+    
+    .join-step {
+      background: var(--bg-800);
+      border-radius: 12px;
+      padding: 20px;
+    }
+    
+    .join-step-num {
+      width: 28px;
+      height: 28px;
+      background: var(--amber);
+      color: var(--bg-950);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: 700;
+      font-size: 14px;
+      margin-bottom: 12px;
+    }
+    
+    .join-step-title {
+      font-weight: 600;
+      margin-bottom: 4px;
+    }
+    
+    .join-step-desc {
+      font-size: 13px;
+      color: var(--text-dim);
+    }
+    
+    .join-ens {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 18px;
+      color: var(--amber);
+      padding: 16px 32px;
+      background: var(--bg-800);
+      border-radius: 8px;
+      display: inline-block;
+    }
+    
+    /* Terminal section */
+    .terminal-section {
+      padding: 60px 0;
+    }
+    
+    .terminal {
+      background: var(--bg-900);
+      border: 1px solid var(--bg-600);
+      border-radius: 12px;
+      overflow: hidden;
+      max-width: 800px;
+      margin: 0 auto;
+    }
+    
+    .terminal-header {
+      background: var(--bg-800);
+      padding: 12px 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      border-bottom: 1px solid var(--bg-600);
+    }
+    
+    .terminal-dot {
+      width: 12px;
+      height: 12px;
+      border-radius: 50%;
+    }
+    
+    .terminal-dot.red { background: #ff5f56; }
+    .terminal-dot.yellow { background: #ffbd2e; }
+    .terminal-dot.green { background: #27ca40; }
+    
+    .terminal-title {
+      flex: 1;
+      text-align: center;
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .terminal-body {
+      padding: 24px;
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 13px;
+      line-height: 1.8;
+    }
+    
+    .terminal-line {
+      margin-bottom: 4px;
+    }
+    
+    .terminal-prompt { color: var(--amber); }
+    .terminal-cmd { color: var(--text); }
+    .terminal-output { color: var(--text-dim); }
+    .terminal-success { color: var(--green); }
+    .terminal-ens { color: var(--cyan); }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--bg-700);
+      padding: 40px 0;
+      margin-top: 60px;
+    }
+    
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover { color: var(--amber); }
+    
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; gap: 16px; }
+      .hero { padding: 60px 0 40px; }
+      .swarm-stat-value { font-size: 32px; }
+      .worker-header { flex-direction: column; align-items: flex-start; gap: 12px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="hex-bg"></div>
+  
+  <header>
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">🐝</div>
+          <div class="logo-text">Swarm<span>Bee</span></div>
+        </div>
+        <nav class="nav-links">
+          <a href="#workers">Workers</a>
+          <a href="#hardware">Hardware</a>
+          <a href="#join">Join</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb →</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span class="bee">🐝</span>
+          <span class="mono">swarmbee.eth</span>
+        </div>
+        <h1>The Worker <span>Swarm</span></h1>
+        <p class="hero-sub">
+          GPU operators powering sovereign compute. Every bee is an ENS identity. Every job is cryptographically proven.
+        </p>
+      </div>
+    </section>
+    
+    <!-- Swarm Stats -->
+    <div class="container">
+      <div class="swarm-stats">
+        <div class="swarm-stat">
+          <div class="swarm-stat-value">296</div>
+          <div class="swarm-stat-label">Total GPUs</div>
+        </div>
+        <div class="swarm-stat">
+          <div class="swarm-stat-value">12</div>
+          <div class="swarm-stat-label">Active Bees</div>
+        </div>
+        <div class="swarm-stat">
+          <div class="swarm-stat-value">8,473</div>
+          <div class="swarm-stat-label">Jobs Completed</div>
+        </div>
+        <div class="swarm-stat">
+          <div class="swarm-stat-value">99.7%</div>
+          <div class="swarm-stat-label">Uptime</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Workers -->
+    <section class="workers-section" id="workers">
+      <div class="container">
+        <div class="section-header">
+          <h2>Active Workers</h2>
+          <p>Live status from the swarm</p>
+        </div>
+        
+        <div class="workers-grid">
+          <!-- Bee-01 -->
+          <div class="worker-card online">
+            <div class="worker-header">
+              <div class="worker-identity">
+                <div class="worker-icon">🐝</div>
+                <div>
+                  <div class="worker-name">bee-01.swarmbee.eth</div>
+                  <div class="worker-role">Primary Worker</div>
+                </div>
+              </div>
+              <div class="worker-status online">
+                <span class="dot"></span>
+                Online
+              </div>
+            </div>
+            <div class="worker-specs">
+              <div class="spec-row">
+                <span class="spec-label">GPU</span>
+                <span class="spec-value gpu">8× RTX 5090</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">VRAM</span>
+                <span class="spec-value vram">256 GB</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">CUDA</span>
+                <span class="spec-value">12.4</span>
+              </div>
+            </div>
+            <div class="worker-stats">
+              <div class="worker-stat">
+                <div class="worker-stat-value">2,847</div>
+                <div class="worker-stat-label">Jobs</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">$847</div>
+                <div class="worker-stat-label">Earned</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">99.9%</div>
+                <div class="worker-stat-label">Uptime</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bee-02 -->
+          <div class="worker-card busy">
+            <div class="worker-header">
+              <div class="worker-identity">
+                <div class="worker-icon">🐝</div>
+                <div>
+                  <div class="worker-name">bee-02.swarmbee.eth</div>
+                  <div class="worker-role">Inference Node</div>
+                </div>
+              </div>
+              <div class="worker-status busy">
+                <span class="dot"></span>
+                Processing
+              </div>
+            </div>
+            <div class="worker-specs">
+              <div class="spec-row">
+                <span class="spec-label">GPU</span>
+                <span class="spec-value gpu">8× RTX 6000 Ada</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">VRAM</span>
+                <span class="spec-value vram">384 GB</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">CUDA</span>
+                <span class="spec-value">12.4</span>
+              </div>
+            </div>
+            <div class="worker-stats">
+              <div class="worker-stat">
+                <div class="worker-stat-value">2,134</div>
+                <div class="worker-stat-label">Jobs</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">$623</div>
+                <div class="worker-stat-label">Earned</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">99.8%</div>
+                <div class="worker-stat-label">Uptime</div>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Bee-03 -->
+          <div class="worker-card online">
+            <div class="worker-header">
+              <div class="worker-identity">
+                <div class="worker-icon">🐝</div>
+                <div>
+                  <div class="worker-name">bee-03.swarmbee.eth</div>
+                  <div class="worker-role">Batch Processor</div>
+                </div>
+              </div>
+              <div class="worker-status online">
+                <span class="dot"></span>
+                Online
+              </div>
+            </div>
+            <div class="worker-specs">
+              <div class="spec-row">
+                <span class="spec-label">GPU</span>
+                <span class="spec-value gpu">8× RTX 3090</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">VRAM</span>
+                <span class="spec-value vram">192 GB</span>
+              </div>
+              <div class="spec-row">
+                <span class="spec-label">CUDA</span>
+                <span class="spec-value">12.2</span>
+              </div>
+            </div>
+            <div class="worker-stats">
+              <div class="worker-stat">
+                <div class="worker-stat-value">1,892</div>
+                <div class="worker-stat-label">Jobs</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">$412</div>
+                <div class="worker-stat-label">Earned</div>
+              </div>
+              <div class="worker-stat">
+                <div class="worker-stat-value">99.5%</div>
+                <div class="worker-stat-label">Uptime</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Hardware -->
+    <section class="hardware-section" id="hardware">
+      <div class="container">
+        <div class="section-header">
+          <h2>Swarm Hardware</h2>
+          <p>Sovereign GPU infrastructure powered by solar</p>
+        </div>
+        
+        <div class="hardware-grid">
+          <div class="hardware-card">
+            <div class="hardware-icon">⚡</div>
+            <div class="hardware-name">RTX 5090</div>
+            <div class="hardware-count">48</div>
+            <div class="hardware-spec">32GB VRAM each</div>
+            <div class="hardware-total">
+              <div class="hardware-total-label">Total VRAM</div>
+              <div class="hardware-total-value">1.5 TB</div>
+            </div>
+          </div>
+          
+          <div class="hardware-card">
+            <div class="hardware-icon">🔥</div>
+            <div class="hardware-name">RTX 6000 Ada</div>
+            <div class="hardware-count">48</div>
+            <div class="hardware-spec">48GB VRAM each</div>
+            <div class="hardware-total">
+              <div class="hardware-total-label">Total VRAM</div>
+              <div class="hardware-total-value">2.3 TB</div>
+            </div>
+          </div>
+          
+          <div class="hardware-card">
+            <div class="hardware-icon">💪</div>
+            <div class="hardware-name">RTX 3090</div>
+            <div class="hardware-count">200</div>
+            <div class="hardware-spec">24GB VRAM each</div>
+            <div class="hardware-total">
+              <div class="hardware-total-label">Total VRAM</div>
+              <div class="hardware-total-value">4.8 TB</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Terminal -->
+    <section class="terminal-section">
+      <div class="container">
+        <div class="terminal">
+          <div class="terminal-header">
+            <span class="terminal-dot red"></span>
+            <span class="terminal-dot yellow"></span>
+            <span class="terminal-dot green"></span>
+            <span class="terminal-title">worker@swarmbee ~ bee-02</span>
+          </div>
+          <div class="terminal-body">
+            <div class="terminal-line">
+              <span class="terminal-prompt">$ </span>
+              <span class="terminal-cmd">swarm status</span>
+            </div>
+            <div class="terminal-line terminal-output">
+              Worker: <span class="terminal-ens">bee-02.swarmbee.eth</span>
+            </div>
+            <div class="terminal-line terminal-output">
+              Status: <span class="terminal-success">ONLINE</span>
+            </div>
+            <div class="terminal-line terminal-output">
+              GPU: 8× RTX 6000 Ada (384GB VRAM)
+            </div>
+            <div class="terminal-line terminal-output">
+              Jobs Today: 127 | Earnings: $8.89
+            </div>
+            <div class="terminal-line terminal-output">&nbsp;</div>
+            <div class="terminal-line">
+              <span class="terminal-prompt">$ </span>
+              <span class="terminal-cmd">swarm claim</span>
+            </div>
+            <div class="terminal-line terminal-success">
+              ✓ Claimed job-003-0069 (spine_mri)
+            </div>
+            <div class="terminal-line terminal-output">
+              Processing... ████████████░░░░ 78%
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Join -->
+    <section class="join-section" id="join">
+      <div class="container">
+        <div class="join-card">
+          <h2>Join the <span>Swarm</span></h2>
+          <p>
+            Got GPUs? Become a worker bee. Earn USDC for every job completed. 
+            Your hardware, your keys, your earnings.
+          </p>
+          
+          <div class="join-steps">
+            <div class="join-step">
+              <div class="join-step-num">1</div>
+              <div class="join-step-title">Get Subdomain</div>
+              <div class="join-step-desc">Register your-name.swarmbee.eth</div>
+            </div>
+            <div class="join-step">
+              <div class="join-step-num">2</div>
+              <div class="join-step-title">Run Worker</div>
+              <div class="join-step-desc">Deploy Bee-2 on your GPU rack</div>
+            </div>
+            <div class="join-step">
+              <div class="join-step-num">3</div>
+              <div class="join-step-title">Earn USDC</div>
+              <div class="join-step-desc">$0.07 per job, settled in epochs</div>
+            </div>
+          </div>
+          
+          <div class="join-ens">*.swarmbee.eth</div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-links">
+          <a href="https://swarmos.eth.limo" target="_blank">SwarmOS</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb</a>
+          <a href="https://swarmledger.eth.limo" target="_blank">SwarmLedger</a>
+          <a href="https://clientswarm.eth.limo" target="_blank">ClientSwarm</a>
+        </div>
+        <div class="footer-copy">
+          <span class="mono">swarmbee.eth</span> · SudoHash LLC · The Hive
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>

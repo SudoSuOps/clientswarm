@@ -1,0 +1,1009 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>SwarmBank | The Treasury</title>
+  <meta name="description" content="SwarmBank - The treasury of SwarmOS. USDC vault. Worker payouts. Sovereign finance.">
+  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🏦</text></svg>">
+  <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600;700&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg-950: #030504;
+      --bg-900: #0a0f0a;
+      --bg-800: #101810;
+      --bg-700: #1a281a;
+      --bg-600: #263826;
+      --bg-500: #334833;
+      --gold: #fbbf24;
+      --gold-bright: #fcd34d;
+      --gold-dim: #f59e0b;
+      --green: #10b981;
+      --green-bright: #34d399;
+      --cyan: #06b6d4;
+      --text: #fafafa;
+      --text-dim: #a1a1aa;
+      --text-muted: #71717a;
+    }
+    
+    * { margin: 0; padding: 0; box-sizing: border-box; }
+    
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg-950);
+      color: var(--text);
+      min-height: 100vh;
+      overflow-x: hidden;
+    }
+    
+    .mono { font-family: 'JetBrains Mono', monospace; }
+    
+    /* Vault pattern background */
+    .vault-bg {
+      position: fixed;
+      inset: 0;
+      background-image: 
+        radial-gradient(ellipse at 50% 0%, rgba(251, 191, 36, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 80% 80%, rgba(16, 185, 129, 0.05) 0%, transparent 40%);
+      pointer-events: none;
+      z-index: 0;
+    }
+    
+    .vault-bg::before {
+      content: '';
+      position: absolute;
+      inset: 0;
+      background-image: 
+        repeating-linear-gradient(
+          0deg,
+          transparent,
+          transparent 100px,
+          rgba(251, 191, 36, 0.02) 100px,
+          rgba(251, 191, 36, 0.02) 101px
+        ),
+        repeating-linear-gradient(
+          90deg,
+          transparent,
+          transparent 100px,
+          rgba(251, 191, 36, 0.02) 100px,
+          rgba(251, 191, 36, 0.02) 101px
+        );
+    }
+    
+    .container {
+      position: relative;
+      z-index: 1;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    
+    /* Header */
+    header {
+      padding: 20px 0;
+      border-bottom: 1px solid rgba(251, 191, 36, 0.1);
+    }
+    
+    .header-inner {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .logo-icon {
+      width: 46px;
+      height: 46px;
+      background: linear-gradient(135deg, var(--gold) 0%, var(--gold-dim) 100%);
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 24px;
+      box-shadow: 0 0 30px rgba(251, 191, 36, 0.4);
+    }
+    
+    .logo-text {
+      font-size: 26px;
+      font-weight: 700;
+      letter-spacing: -0.5px;
+    }
+    
+    .logo-text span { color: var(--gold); }
+    
+    .nav-links {
+      display: flex;
+      gap: 8px;
+    }
+    
+    .nav-links a {
+      color: var(--text-dim);
+      text-decoration: none;
+      padding: 8px 16px;
+      border-radius: 6px;
+      font-size: 14px;
+      transition: all 0.2s;
+    }
+    
+    .nav-links a:hover {
+      color: var(--text);
+      background: var(--bg-700);
+    }
+    
+    /* Hero */
+    .hero {
+      padding: 100px 0 60px;
+      text-align: center;
+    }
+    
+    .hero-badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 6px 16px;
+      background: rgba(251, 191, 36, 0.1);
+      border: 1px solid rgba(251, 191, 36, 0.3);
+      border-radius: 100px;
+      font-size: 13px;
+      color: var(--gold);
+      margin-bottom: 28px;
+    }
+    
+    .hero-badge .icon {
+      font-size: 16px;
+    }
+    
+    .hero h1 {
+      font-size: clamp(52px, 8vw, 80px);
+      font-weight: 700;
+      letter-spacing: -3px;
+      line-height: 1;
+      margin-bottom: 20px;
+    }
+    
+    .hero h1 span { 
+      color: var(--gold);
+      text-shadow: 0 0 60px rgba(251, 191, 36, 0.5);
+    }
+    
+    .hero-sub {
+      font-size: 18px;
+      color: var(--text-dim);
+      max-width: 550px;
+      margin: 0 auto 40px;
+      line-height: 1.6;
+    }
+    
+    /* Vault display */
+    .vault-display {
+      background: linear-gradient(135deg, var(--bg-800) 0%, var(--bg-900) 100%);
+      border: 2px solid rgba(251, 191, 36, 0.3);
+      border-radius: 24px;
+      padding: 48px;
+      max-width: 600px;
+      margin: 0 auto 60px;
+      position: relative;
+      overflow: hidden;
+    }
+    
+    .vault-display::before {
+      content: '';
+      position: absolute;
+      top: -50%;
+      left: -50%;
+      width: 200%;
+      height: 200%;
+      background: conic-gradient(
+        from 0deg,
+        transparent 0deg,
+        rgba(251, 191, 36, 0.03) 60deg,
+        transparent 120deg
+      );
+      animation: vault-rotate 20s linear infinite;
+    }
+    
+    @keyframes vault-rotate {
+      from { transform: rotate(0deg); }
+      to { transform: rotate(360deg); }
+    }
+    
+    .vault-content {
+      position: relative;
+      z-index: 1;
+    }
+    
+    .vault-label {
+      font-size: 12px;
+      text-transform: uppercase;
+      letter-spacing: 2px;
+      color: var(--gold);
+      margin-bottom: 8px;
+    }
+    
+    .vault-amount {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 64px;
+      font-weight: 700;
+      color: var(--text);
+      line-height: 1;
+      margin-bottom: 4px;
+    }
+    
+    .vault-amount .symbol {
+      color: var(--gold);
+    }
+    
+    .vault-currency {
+      font-size: 14px;
+      color: var(--text-muted);
+    }
+    
+    .vault-address {
+      margin-top: 24px;
+      padding-top: 24px;
+      border-top: 1px solid rgba(251, 191, 36, 0.2);
+    }
+    
+    .vault-address-label {
+      font-size: 11px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      margin-bottom: 8px;
+    }
+    
+    .vault-address-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 14px;
+      color: var(--green);
+      word-break: break-all;
+    }
+    
+    /* Stats grid */
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 1px;
+      background: rgba(251, 191, 36, 0.2);
+      border-radius: 16px;
+      overflow: hidden;
+      margin-bottom: 60px;
+    }
+    
+    @media (max-width: 800px) {
+      .stats-grid { grid-template-columns: repeat(2, 1fr); }
+    }
+    
+    .stat-card {
+      background: var(--bg-800);
+      padding: 32px 24px;
+      text-align: center;
+    }
+    
+    .stat-value {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 4px;
+    }
+    
+    .stat-value.gold { color: var(--gold); }
+    .stat-value.green { color: var(--green); }
+    .stat-value.cyan { color: var(--cyan); }
+    
+    .stat-label {
+      font-size: 12px;
+      color: var(--text-muted);
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+    
+    /* Flows section */
+    .flows-section {
+      padding: 60px 0;
+    }
+    
+    .section-header {
+      text-align: center;
+      margin-bottom: 48px;
+    }
+    
+    .section-header h2 {
+      font-size: 36px;
+      font-weight: 700;
+      margin-bottom: 12px;
+    }
+    
+    .section-header p {
+      color: var(--text-dim);
+      font-size: 16px;
+    }
+    
+    .flows-grid {
+      display: grid;
+      grid-template-columns: repeat(2, 1fr);
+      gap: 24px;
+    }
+    
+    @media (max-width: 800px) {
+      .flows-grid { grid-template-columns: 1fr; }
+    }
+    
+    .flow-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 32px;
+      transition: all 0.3s;
+    }
+    
+    .flow-card:hover {
+      border-color: var(--gold);
+      transform: translateY(-4px);
+    }
+    
+    .flow-card.inflow { border-top: 3px solid var(--green); }
+    .flow-card.outflow { border-top: 3px solid var(--gold); }
+    
+    .flow-header {
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      margin-bottom: 20px;
+    }
+    
+    .flow-icon {
+      width: 56px;
+      height: 56px;
+      border-radius: 14px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 28px;
+    }
+    
+    .flow-card.inflow .flow-icon {
+      background: rgba(16, 185, 129, 0.1);
+    }
+    
+    .flow-card.outflow .flow-icon {
+      background: rgba(251, 191, 36, 0.1);
+    }
+    
+    .flow-title {
+      font-size: 20px;
+      font-weight: 600;
+    }
+    
+    .flow-subtitle {
+      font-size: 13px;
+      color: var(--text-muted);
+    }
+    
+    .flow-steps {
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    
+    .flow-step {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      padding: 12px;
+      background: var(--bg-900);
+      border-radius: 8px;
+    }
+    
+    .flow-step-num {
+      width: 24px;
+      height: 24px;
+      background: var(--bg-600);
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      flex-shrink: 0;
+    }
+    
+    .flow-card.inflow .flow-step-num { color: var(--green); }
+    .flow-card.outflow .flow-step-num { color: var(--gold); }
+    
+    .flow-step-text {
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .flow-step-text strong {
+      color: var(--text);
+    }
+    
+    /* Recent payouts */
+    .payouts-section {
+      padding: 60px 0;
+    }
+    
+    .payouts-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      overflow: hidden;
+    }
+    
+    .payouts-header {
+      padding: 20px 24px;
+      border-bottom: 1px solid var(--bg-600);
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    
+    .payouts-header h3 {
+      font-size: 18px;
+      font-weight: 600;
+    }
+    
+    .payouts-total {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--gold);
+    }
+    
+    .payouts-table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+    
+    .payouts-table th {
+      text-align: left;
+      font-size: 11px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: var(--text-muted);
+      font-weight: 500;
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bg-600);
+      background: var(--bg-900);
+    }
+    
+    .payouts-table td {
+      padding: 16px 20px;
+      border-bottom: 1px solid var(--bg-700);
+      font-size: 14px;
+    }
+    
+    .payouts-table tr:hover td {
+      background: rgba(251, 191, 36, 0.02);
+    }
+    
+    .payout-status {
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      padding: 4px 10px;
+      border-radius: 100px;
+      font-size: 12px;
+      font-weight: 500;
+    }
+    
+    .payout-status.completed {
+      background: rgba(16, 185, 129, 0.1);
+      color: var(--green);
+    }
+    
+    .payout-status.pending {
+      background: rgba(251, 191, 36, 0.1);
+      color: var(--gold);
+    }
+    
+    .payout-status.processing {
+      background: rgba(6, 182, 212, 0.1);
+      color: var(--cyan);
+    }
+    
+    .payout-amount {
+      font-family: 'JetBrains Mono', monospace;
+      color: var(--gold);
+      font-weight: 500;
+    }
+    
+    .payout-tx {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--cyan);
+    }
+    
+    /* Treasury allocation */
+    .allocation-section {
+      padding: 60px 0;
+    }
+    
+    .allocation-card {
+      background: var(--bg-800);
+      border: 1px solid var(--bg-600);
+      border-radius: 16px;
+      padding: 40px;
+      max-width: 700px;
+      margin: 0 auto;
+    }
+    
+    .allocation-bar {
+      height: 32px;
+      background: var(--bg-900);
+      border-radius: 16px;
+      overflow: hidden;
+      display: flex;
+      margin-bottom: 32px;
+    }
+    
+    .allocation-segment {
+      height: 100%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 12px;
+      font-weight: 600;
+      color: var(--bg-950);
+    }
+    
+    .allocation-segment.work { 
+      width: 70%; 
+      background: linear-gradient(90deg, var(--gold) 0%, var(--gold-dim) 100%);
+    }
+    
+    .allocation-segment.readiness { 
+      width: 23%; 
+      background: linear-gradient(90deg, var(--green) 0%, var(--green-bright) 100%);
+    }
+    
+    .allocation-segment.fees { 
+      width: 7%; 
+      background: var(--bg-500);
+      color: var(--text-dim);
+    }
+    
+    .allocation-legend {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 20px;
+    }
+    
+    @media (max-width: 600px) {
+      .allocation-legend { grid-template-columns: 1fr; }
+    }
+    
+    .legend-item {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+    }
+    
+    .legend-dot {
+      width: 16px;
+      height: 16px;
+      border-radius: 4px;
+      flex-shrink: 0;
+    }
+    
+    .legend-dot.work { background: var(--gold); }
+    .legend-dot.readiness { background: var(--green); }
+    .legend-dot.fees { background: var(--bg-500); }
+    
+    .legend-info {
+      flex: 1;
+    }
+    
+    .legend-name {
+      font-size: 14px;
+      font-weight: 500;
+    }
+    
+    .legend-pct {
+      font-family: 'JetBrains Mono', monospace;
+      font-size: 12px;
+      color: var(--text-muted);
+    }
+    
+    /* USDC section */
+    .usdc-section {
+      padding: 60px 0;
+    }
+    
+    .usdc-card {
+      background: linear-gradient(135deg, rgba(38, 112, 233, 0.1) 0%, rgba(38, 112, 233, 0.02) 100%);
+      border: 1px solid rgba(38, 112, 233, 0.3);
+      border-radius: 20px;
+      padding: 48px;
+      text-align: center;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    
+    .usdc-logo {
+      width: 80px;
+      height: 80px;
+      background: #2775ca;
+      border-radius: 50%;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      margin: 0 auto 24px;
+      font-size: 40px;
+      font-weight: 700;
+      color: white;
+    }
+    
+    .usdc-card h3 {
+      font-size: 28px;
+      margin-bottom: 12px;
+    }
+    
+    .usdc-card p {
+      color: var(--text-dim);
+      line-height: 1.6;
+      margin-bottom: 24px;
+    }
+    
+    .usdc-features {
+      display: flex;
+      justify-content: center;
+      gap: 32px;
+      flex-wrap: wrap;
+    }
+    
+    .usdc-feature {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 14px;
+      color: var(--text-dim);
+    }
+    
+    .usdc-feature .check {
+      color: var(--green);
+      font-size: 18px;
+    }
+    
+    /* Footer */
+    footer {
+      border-top: 1px solid var(--bg-700);
+      padding: 40px 0;
+      margin-top: 60px;
+    }
+    
+    .footer-inner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 20px;
+    }
+    
+    .footer-links {
+      display: flex;
+      gap: 24px;
+    }
+    
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      font-size: 14px;
+      transition: color 0.2s;
+    }
+    
+    .footer-links a:hover { color: var(--gold); }
+    
+    .footer-copy {
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    
+    /* Responsive */
+    @media (max-width: 600px) {
+      .header-inner { flex-direction: column; gap: 16px; }
+      .hero { padding: 60px 0 40px; }
+      .vault-amount { font-size: 42px; }
+      .vault-display { padding: 32px 24px; }
+      .stat-value { font-size: 28px; }
+    }
+  </style>
+</head>
+<body>
+  <div class="vault-bg"></div>
+  
+  <header>
+    <div class="container">
+      <div class="header-inner">
+        <div class="logo">
+          <div class="logo-icon">🏦</div>
+          <div class="logo-text">Swarm<span>Bank</span></div>
+        </div>
+        <nav class="nav-links">
+          <a href="#flows">Money Flows</a>
+          <a href="#payouts">Payouts</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb →</a>
+        </nav>
+      </div>
+    </div>
+  </header>
+  
+  <main>
+    <!-- Hero -->
+    <section class="hero">
+      <div class="container">
+        <div class="hero-badge">
+          <span class="icon">🏦</span>
+          <span class="mono">swarmbank.eth</span>
+        </div>
+        <h1>The <span>Treasury</span></h1>
+        <p class="hero-sub">
+          USDC vault for SwarmOS. Client deposits. Worker payouts. Sovereign finance on Ethereum L1.
+        </p>
+        
+        <!-- Vault Display -->
+        <div class="vault-display">
+          <div class="vault-content">
+            <div class="vault-label">Total Vault Balance</div>
+            <div class="vault-amount"><span class="symbol">$</span>12,847.50</div>
+            <div class="vault-currency">USDC on Ethereum Mainnet</div>
+            
+            <div class="vault-address">
+              <div class="vault-address-label">Vault Address</div>
+              <div class="vault-address-value">0x742d35Cc6634C0532925a3b844Bc9e7595f7e3e0</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Stats -->
+    <div class="container">
+      <div class="stats-grid">
+        <div class="stat-card">
+          <div class="stat-value green">$8,240</div>
+          <div class="stat-label">Total Deposits</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value gold">$5,892</div>
+          <div class="stat-label">Total Payouts</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value cyan">47</div>
+          <div class="stat-label">Payouts Sent</div>
+        </div>
+        <div class="stat-card">
+          <div class="stat-value green">100%</div>
+          <div class="stat-label">Settlement Rate</div>
+        </div>
+      </div>
+    </div>
+    
+    <!-- Money Flows -->
+    <section class="flows-section" id="flows">
+      <div class="container">
+        <div class="section-header">
+          <h2>Money Flows</h2>
+          <p>How USDC moves through SwarmOS</p>
+        </div>
+        
+        <div class="flows-grid">
+          <!-- Inflow -->
+          <div class="flow-card inflow">
+            <div class="flow-header">
+              <div class="flow-icon">💰</div>
+              <div>
+                <div class="flow-title">Client Deposits</div>
+                <div class="flow-subtitle">USDC → Vault</div>
+              </div>
+            </div>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <span class="flow-step-num">1</span>
+                <span class="flow-step-text">Client sends <strong>USDC</strong> to vault address</span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">2</span>
+                <span class="flow-step-text">Watcher detects <strong>L1 transaction</strong></span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">3</span>
+                <span class="flow-step-text"><strong>SwarmLedger</strong> credits client balance</span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">4</span>
+                <span class="flow-step-text">Client can <strong>submit jobs</strong> immediately</span>
+              </div>
+            </div>
+          </div>
+          
+          <!-- Outflow -->
+          <div class="flow-card outflow">
+            <div class="flow-header">
+              <div class="flow-icon">🐝</div>
+              <div>
+                <div class="flow-title">Worker Payouts</div>
+                <div class="flow-subtitle">Vault → Workers</div>
+              </div>
+            </div>
+            <div class="flow-steps">
+              <div class="flow-step">
+                <span class="flow-step-num">1</span>
+                <span class="flow-step-text">Worker <strong>requests withdrawal</strong></span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">2</span>
+                <span class="flow-step-text"><strong>SwarmLedger</strong> verifies balance</span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">3</span>
+                <span class="flow-step-text">SwarmBank executes <strong>L1 transfer</strong></span>
+              </div>
+              <div class="flow-step">
+                <span class="flow-step-num">4</span>
+                <span class="flow-step-text">Worker receives <strong>USDC</strong> to wallet</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Treasury Allocation -->
+    <section class="allocation-section">
+      <div class="container">
+        <div class="section-header">
+          <h2>Revenue Allocation</h2>
+          <p>How each epoch's revenue is distributed</p>
+        </div>
+        
+        <div class="allocation-card">
+          <div class="allocation-bar">
+            <div class="allocation-segment work">70%</div>
+            <div class="allocation-segment readiness">23%</div>
+            <div class="allocation-segment fees">7%</div>
+          </div>
+          
+          <div class="allocation-legend">
+            <div class="legend-item">
+              <div class="legend-dot work"></div>
+              <div class="legend-info">
+                <div class="legend-name">Work Pool</div>
+                <div class="legend-pct">70% · Per job completed</div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot readiness"></div>
+              <div class="legend-info">
+                <div class="legend-name">Readiness Pool</div>
+                <div class="legend-pct">23% · Per uptime</div>
+              </div>
+            </div>
+            <div class="legend-item">
+              <div class="legend-dot fees"></div>
+              <div class="legend-info">
+                <div class="legend-name">Protocol + Operator</div>
+                <div class="legend-pct">7% · bee23 + swarmos</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+    
+    <!-- Recent Payouts -->
+    <section class="payouts-section" id="payouts">
+      <div class="container">
+        <div class="section-header">
+          <h2>Recent Payouts</h2>
+          <p>Worker withdrawals from the vault</p>
+        </div>
+        
+        <div class="payouts-card">
+          <div class="payouts-header">
+            <h3>Payout History</h3>
+            <span class="payouts-total">$5,892.40 total</span>
+          </div>
+          <table class="payouts-table">
+            <thead>
+              <tr>
+                <th>Worker</th>
+                <th>Amount</th>
+                <th>Status</th>
+                <th>Tx Hash</th>
+                <th>Time</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td class="mono" style="color: var(--gold)">bee-01.swarmbee.eth</td>
+                <td class="payout-amount">$250.00</td>
+                <td><span class="payout-status completed">✓ Completed</span></td>
+                <td class="payout-tx">0x8a3f...c2d1</td>
+                <td style="color: var(--text-muted)">2 hours ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--gold)">bee-02.swarmbee.eth</td>
+                <td class="payout-amount">$175.50</td>
+                <td><span class="payout-status completed">✓ Completed</span></td>
+                <td class="payout-tx">0x2b7c...f8e3</td>
+                <td style="color: var(--text-muted)">5 hours ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--gold)">bee-03.swarmbee.eth</td>
+                <td class="payout-amount">$100.00</td>
+                <td><span class="payout-status processing">⟳ Processing</span></td>
+                <td class="payout-tx">—</td>
+                <td style="color: var(--text-muted)">Just now</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--gold)">bee-01.swarmbee.eth</td>
+                <td class="payout-amount">$500.00</td>
+                <td><span class="payout-status completed">✓ Completed</span></td>
+                <td class="payout-tx">0x9d4e...a1b2</td>
+                <td style="color: var(--text-muted)">1 day ago</td>
+              </tr>
+              <tr>
+                <td class="mono" style="color: var(--gold)">bee-04.swarmbee.eth</td>
+                <td class="payout-amount">$89.20</td>
+                <td><span class="payout-status completed">✓ Completed</span></td>
+                <td class="payout-tx">0x3c5f...d7e8</td>
+                <td style="color: var(--text-muted)">2 days ago</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+    
+    <!-- USDC -->
+    <section class="usdc-section">
+      <div class="container">
+        <div class="usdc-card">
+          <div class="usdc-logo">$</div>
+          <h3>Powered by USDC</h3>
+          <p>
+            SwarmBank uses USDC on Ethereum mainnet for all settlements. 
+            Stable. Trusted. Instant finality.
+          </p>
+          <div class="usdc-features">
+            <div class="usdc-feature">
+              <span class="check">✓</span>
+              <span>1:1 USD Backed</span>
+            </div>
+            <div class="usdc-feature">
+              <span class="check">✓</span>
+              <span>Ethereum L1</span>
+            </div>
+            <div class="usdc-feature">
+              <span class="check">✓</span>
+              <span>Instant Settlement</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+  
+  <footer>
+    <div class="container">
+      <div class="footer-inner">
+        <div class="footer-links">
+          <a href="https://swarmos.eth.limo" target="_blank">SwarmOS</a>
+          <a href="https://swarmorb.eth.limo" target="_blank">SwarmOrb</a>
+          <a href="https://swarmledger.eth.limo" target="_blank">SwarmLedger</a>
+          <a href="https://swarmbee.eth.limo" target="_blank">SwarmBee</a>
+        </div>
+        <div class="footer-copy">
+          <span class="mono">swarmbank.eth</span> · SudoHash LLC · The Vault
+        </div>
+      </div>
+    </div>
+  </footer>
+</body>
+</html>
