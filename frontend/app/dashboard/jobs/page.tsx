@@ -182,7 +182,7 @@ export default function JobsPage() {
                         </td>
                         <td className="px-6 py-4">
                           <Link
-                            href={`/dashboard/jobs/${job.job_id}`}
+                            href={`/dashboard/jobs/view?id=${job.job_id}`}
                             className="p-2 text-client-text-dim hover:text-client-teal transition-colors"
                           >
                             <ExternalLink className="w-4 h-4" />
