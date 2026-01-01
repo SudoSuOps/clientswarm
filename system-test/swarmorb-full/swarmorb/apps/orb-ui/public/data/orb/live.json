@@ -1,16 +1,16 @@
 {
   "version": "1.0.0",
-  "timestamp": "2026-01-01T02:11:39.093546Z",
+  "timestamp": "2026-01-01T02:14:16.485260Z",
   "coordinator": "bee1.swarmos.eth",
   "current_epoch": {
     "epoch_id": "epoch-001",
     "started_at": null,
     "ends_at": "",
-    "jobs_completed": 212,
+    "jobs_completed": 418,
     "jobs_in_progress": 201,
-    "revenue_collected": "21.20",
-    "work_pool": "14.84",
-    "readiness_pool": "6.36"
+    "revenue_collected": "41.80",
+    "work_pool": "29.26",
+    "readiness_pool": "12.54"
   },
   "agents": [
     {
@@ -18,7 +18,7 @@
       "status": "online",
       "last_heartbeat": "2026-01-01T02:03:47.383844",
       "current_job": null,
-      "jobs_this_epoch": 101,
+      "jobs_this_epoch": 307,
       "uptime_this_epoch": 86400,
       "hardware": {
         "gpu": "2x NVIDIA RTX 5090",
@@ -28,7 +28,7 @@
     }
   ],
   "queue": {
-    "pending": 6,
+    "pending": 0,
     "in_progress": 201,
     "avg_wait_seconds": 0
   }

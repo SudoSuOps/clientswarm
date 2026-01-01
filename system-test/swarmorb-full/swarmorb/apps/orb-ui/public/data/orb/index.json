@@ -1,6 +1,6 @@
 {
   "version": "1.0.0",
-  "generated_at": "2026-01-01T02:11:39.093546Z",
+  "generated_at": "2026-01-01T02:14:16.485260Z",
   "coordinator": "bee1.swarmos.eth",
   "epochs": [
     {
@@ -17,15 +17,15 @@
   ],
   "stats": {
     "total_epochs": 2,
-    "total_jobs": 267,
-    "total_distributed": "24.83",
+    "total_jobs": 473,
+    "total_distributed": "43.99",
     "unique_agents": 1,
     "unique_clients": 1,
     "top_agents": [
       {
         "ens": "bumble70b.swarmbee.eth",
-        "jobs_completed": 101,
-        "total_earned": "9.39",
+        "jobs_completed": 307,
+        "total_earned": "28.55",
         "uptime_hours": 24.0
       }
     ]
