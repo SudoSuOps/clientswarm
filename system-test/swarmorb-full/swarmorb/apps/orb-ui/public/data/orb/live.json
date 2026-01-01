@@ -1,55 +1,35 @@
 {
   "version": "1.0.0",
-  "timestamp": "2025-12-31T21:15:00Z",
-  "coordinator": "swarmos.eth",
+  "timestamp": "2026-01-01T02:11:39.093546Z",
+  "coordinator": "bee1.swarmos.eth",
   "current_epoch": {
-    "epoch_id": "epoch-000",
-    "name": "Genesis",
-    "started_at": "2025-12-31T19:09:00Z",
-    "ends_at": "2025-12-31T21:11:00Z",
-    "status": "sealed",
-    "jobs_completed": 55,
-    "jobs_in_progress": 0,
-    "revenue_collected": "0.00",
-    "work_pool": "0.00",
-    "readiness_pool": "0.00"
+    "epoch_id": "epoch-001",
+    "started_at": null,
+    "ends_at": "",
+    "jobs_completed": 212,
+    "jobs_in_progress": 201,
+    "revenue_collected": "21.20",
+    "work_pool": "14.84",
+    "readiness_pool": "6.36"
   },
   "agents": [
     {
       "ens": "bumble70b.swarmbee.eth",
-      "wallet": "0xBDe2153C5799f4012a9fAF327e3421D1caB4Ea23",
       "status": "online",
-      "last_heartbeat": "2025-12-31T21:11:00Z",
+      "last_heartbeat": "2026-01-01T02:03:47.383844",
       "current_job": null,
-      "jobs_this_epoch": 55,
-      "uptime_this_epoch": 7320,
+      "jobs_this_epoch": 101,
+      "uptime_this_epoch": 86400,
       "hardware": {
         "gpu": "2x NVIDIA RTX 5090",
         "vram_gb": 63.7,
-        "cpu": "Intel Xeon w9-3475X",
-        "ram_gb": 246
-      },
-      "models": ["queenbee-spine", "queenbee-cardiac"],
-      "location": {
-        "region": "Florida, USA",
-        "power": "Solar",
-        "cloud": "none"
+        "cpu": "Intel Xeon w9-3475X"
       }
     }
   ],
   "queue": {
-    "pending": 0,
-    "in_progress": 0,
+    "pending": 6,
+    "in_progress": 201,
     "avg_wait_seconds": 0
-  },
-  "metadata": {
-    "model": "Med42-70B + QueenBee-Spine-LoRA",
-    "method": "K=7 Self-Consistency Voting",
-    "hardware": "2x NVIDIA RTX 5090",
-    "total_vram_gb": 63.7
-  },
-  "signature": {
-    "signer": "swarmos.eth",
-    "message_hash": "0xGENESIS_EPOCH_000_SEALED_55_JOBS_BUMBLE70B"
   }
 }
