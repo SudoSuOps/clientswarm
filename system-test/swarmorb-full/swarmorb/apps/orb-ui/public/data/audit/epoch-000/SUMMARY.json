@@ -1,0 +1,72 @@
+{
+  "epoch_id": "epoch-000",
+  "name": "Genesis",
+  "start_time": "2025-12-31T19:09:00Z",
+  "end_time": "2025-12-31T21:11:00Z",
+  "duration_minutes": 122,
+  "status": "sealed",
+  "coordinator": "swarmos.eth",
+  "merkle_root": "0x7745022229ce64618791ee41945533006def5ec26b0ae1388393ac8da79053dd",
+  "treasury": {
+    "total_revenue": "0.00",
+    "work_pool": "0.00",
+    "readiness_pool": "0.00",
+    "protocol_fee": "0.00",
+    "distributed": "0.00",
+    "dust_rolled": "0.00"
+  },
+  "agents": {
+    "total_active": 1,
+    "total_eligible": 1,
+    "payouts": [
+      {
+        "ens": "bumble70b.swarmbee.eth",
+        "wallet": "0xBDe2153C5799f4012a9fAF327e3421D1caB4Ea23",
+        "jobs_completed": 55,
+        "uptime_seconds": 7320,
+        "work_share": "0.00",
+        "readiness_share": "0.00",
+        "total_payout": "0.00",
+        "poe_success_rate": 1.0,
+        "avg_inference_seconds": 130,
+        "avg_confidence": 0.64
+      }
+    ]
+  },
+  "jobs": {
+    "total_submitted": 55,
+    "total_completed": 55,
+    "total_failed": 0,
+    "avg_execution_ms": 130000,
+    "avg_confidence": 0.64,
+    "confidence_range": {
+      "min": 0.58,
+      "max": 0.70
+    },
+    "by_task_type": {
+      "spine_mri": 55
+    }
+  },
+  "clients": {
+    "total_active": 1,
+    "total_spent": "0.00",
+    "top_clients": [
+      {
+        "ens": "live-session.swarmos.eth",
+        "jobs_submitted": 55,
+        "total_spent": "0.00"
+      }
+    ]
+  },
+  "metadata": {
+    "model": "Med42-70B + QueenBee-Spine-LoRA",
+    "method": "K=7 Self-Consistency Voting",
+    "hardware": "2x NVIDIA RTX 5090",
+    "vram_gb": 63.7,
+    "location": "Florida, USA",
+    "power": "Solar",
+    "cloud": "none"
+  },
+  "genesis_badge": true,
+  "notes": "First epoch of SwarmOS. 55 spine MRI analyses completed during 2-hour live session."
+}

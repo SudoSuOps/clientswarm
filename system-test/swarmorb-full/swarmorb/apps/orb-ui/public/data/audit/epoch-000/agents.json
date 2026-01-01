@@ -1,0 +1,76 @@
+{
+  "epoch_id": "epoch-000",
+  "generated_at": "2025-12-31T21:15:00Z",
+  "agents": [
+    {
+      "ens": "bumble70b.swarmbee.eth",
+      "wallet": "0xBDe2153C5799f4012a9fAF327e3421D1caB4Ea23",
+      "registered_at": "2025-12-31T19:00:00Z",
+      "status": "genesis",
+      "hardware": {
+        "gpus": [
+          {
+            "index": 0,
+            "model": "NVIDIA GeForce RTX 5090",
+            "vram_gb": 31.85
+          },
+          {
+            "index": 1,
+            "model": "NVIDIA GeForce RTX 5090",
+            "vram_gb": 31.85
+          }
+        ],
+        "total_vram_gb": 63.7,
+        "cpu": "Intel Xeon w9-3475X",
+        "cpu_cores": 72,
+        "ram_gb": 246
+      },
+      "models": [
+        {
+          "id": "queenbee-spine",
+          "version": "1.0.0",
+          "type": "segmentation",
+          "llm": "Med42-70B",
+          "lora": "QueenBee-Spine-LoRA"
+        }
+      ],
+      "location": {
+        "region": "Florida, USA",
+        "timezone": "America/New_York",
+        "power_source": "Solar",
+        "cloud_provider": "none",
+        "datacenter": "Home Lab"
+      },
+      "epoch_stats": {
+        "jobs_completed": 55,
+        "jobs_failed": 0,
+        "uptime_seconds": 7320,
+        "uptime_percent": 100.0,
+        "avg_inference_seconds": 130,
+        "avg_confidence": 0.64,
+        "confidence_min": 0.58,
+        "confidence_max": 0.70,
+        "work_earnings": "0.00",
+        "readiness_earnings": "0.00",
+        "total_earnings": "0.00"
+      },
+      "reputation": {
+        "score": 100,
+        "tier": "genesis",
+        "badges": ["genesis", "first_worker", "solar_powered"]
+      },
+      "proof_of_existence": {
+        "method": "K=7 Self-Consistency Voting",
+        "success_rate": 1.0,
+        "total_votes": 385
+      }
+    }
+  ],
+  "summary": {
+    "total_agents": 1,
+    "total_gpus": 2,
+    "total_vram_tb": 0.064,
+    "total_jobs": 55,
+    "avg_jobs_per_agent": 55
+  }
+}

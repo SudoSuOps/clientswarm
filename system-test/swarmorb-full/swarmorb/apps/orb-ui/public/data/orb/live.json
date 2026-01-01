@@ -1,0 +1,55 @@
+{
+  "version": "1.0.0",
+  "timestamp": "2025-12-31T21:15:00Z",
+  "coordinator": "swarmos.eth",
+  "current_epoch": {
+    "epoch_id": "epoch-000",
+    "name": "Genesis",
+    "started_at": "2025-12-31T19:09:00Z",
+    "ends_at": "2025-12-31T21:11:00Z",
+    "status": "sealed",
+    "jobs_completed": 55,
+    "jobs_in_progress": 0,
+    "revenue_collected": "0.00",
+    "work_pool": "0.00",
+    "readiness_pool": "0.00"
+  },
+  "agents": [
+    {
+      "ens": "bumble70b.swarmbee.eth",
+      "wallet": "0xBDe2153C5799f4012a9fAF327e3421D1caB4Ea23",
+      "status": "online",
+      "last_heartbeat": "2025-12-31T21:11:00Z",
+      "current_job": null,
+      "jobs_this_epoch": 55,
+      "uptime_this_epoch": 7320,
+      "hardware": {
+        "gpu": "2x NVIDIA RTX 5090",
+        "vram_gb": 63.7,
+        "cpu": "Intel Xeon w9-3475X",
+        "ram_gb": 246
+      },
+      "models": ["queenbee-spine", "queenbee-cardiac"],
+      "location": {
+        "region": "Florida, USA",
+        "power": "Solar",
+        "cloud": "none"
+      }
+    }
+  ],
+  "queue": {
+    "pending": 0,
+    "in_progress": 0,
+    "avg_wait_seconds": 0
+  },
+  "metadata": {
+    "model": "Med42-70B + QueenBee-Spine-LoRA",
+    "method": "K=7 Self-Consistency Voting",
+    "hardware": "2x NVIDIA RTX 5090",
+    "total_vram_gb": 63.7
+  },
+  "signature": {
+    "signer": "swarmos.eth",
+    "message_hash": "0xGENESIS_EPOCH_000_SEALED_55_JOBS_BUMBLE70B"
+  }
+}
